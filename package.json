@@ -3,8 +3,11 @@
   "private": true,
   "packageManager": "pnpm@10.6.0",
   "scripts": {
-    "install": "pnpm exec rush install",
-    "build": "pnpm exec rush build",
-    "test": "pnpm exec rush build && pnpm exec tsx --test packages/*/test/*.test.ts apps/*/test/*.test.ts"
+    "install": "rush install",
+    "build": "rush build",
+    "test": "rush test"
+  },
+  "devDependencies": {
+    "@microsoft/rush": "5.166.0"
   }
 }
