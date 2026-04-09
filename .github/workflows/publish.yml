@@ -57,6 +57,8 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
+          # configure npm auth for publish
+          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
           set -euo pipefail
           publish_order=("packages/core" "packages/telegram" "packages/opencode" "apps/cli")
           for pkg in "${publish_order[@]}"; do
