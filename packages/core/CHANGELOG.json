@@ -1,0 +1,17 @@
+{
+  "name": "@chime-io/core",
+  "entries": [
+    {
+      "version": "1.0.4",
+      "tag": "@chime-io/core_v1.0.4",
+      "date": "Thu, 09 Apr 2026 14:10:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "to rush"
+          }
+        ]
+      }
+    }
+  ]
+}

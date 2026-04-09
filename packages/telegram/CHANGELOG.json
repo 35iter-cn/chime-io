@@ -1,0 +1,22 @@
+{
+  "name": "@chime-io/channel-telegram",
+  "entries": [
+    {
+      "version": "1.0.4",
+      "tag": "@chime-io/channel-telegram_v1.0.4",
+      "date": "Thu, 09 Apr 2026 14:10:06 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "to rush"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@chime-io/core\" to `1.0.4`"
+          }
+        ]
+      }
+    }
+  ]
+}
