@@ -2,14 +2,25 @@
   "name": "telme",
   "version": "1.0.0",
   "description": "Send Telegram messages via CLI",
-  "main": "index.js",
+  "main": "./plugins/opencode-telegram.mjs",
   "bin": {
     "telme": "./bin/telme.js"
+  },
+  "exports": {
+    ".": {
+      "import": "./plugins/opencode-telegram.mjs",
+      "require": "./plugins/opencode-telegram.mjs"
+    }
   },
   "scripts": {
     "test": "node --test"
   },
-  "keywords": ["telegram", "bot", "cli", "notify"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "cli",
+    "notify"
+  ],
   "author": "",
   "license": "MIT",
   "engines": {

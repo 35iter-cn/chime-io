@@ -1,6 +1,7 @@
-import telnotify from '../src/index.js';
+import telnotify from "../src/index.js";
 
-const { createNotifier, createOpenCodeNotifierPlugin, createTelegramChannel } = telnotify;
+const { createNotifier, createOpenCodeNotifierPlugin, createTelegramChannel } =
+  telnotify;
 
 function createLogger(client) {
   return {
@@ -8,8 +9,8 @@ function createLogger(client) {
       if (!client.app || !client.app.log) return;
       await client.app.log({
         body: {
-          service: 'telnotify-opencode-plugin',
-          level: 'warn',
+          service: "telnotify-opencode-plugin",
+          level: "warn",
           message,
           extra,
         },
@@ -21,8 +22,8 @@ function createLogger(client) {
 export const OpenCodeTelegramPlugin = async ({ client }) => {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const userId = process.env.TELEGRAM_USER_ID;
-  const parseMode = process.env.TELEGRAM_PARSE_MODE || 'HTML';
-  const silent = process.env.TELEGRAM_SILENT === '1';
+  const parseMode = process.env.TELEGRAM_PARSE_MODE || "HTML";
+  const silent = process.env.TELEGRAM_SILENT === "1";
 
   const notifier = createNotifier({
     channels: [
@@ -41,3 +42,6 @@ export const OpenCodeTelegramPlugin = async ({ client }) => {
     logger: createLogger(client),
   });
 };
+
+// OpenCode resolves the package entry and expects `default` to be the plugin function.
+export default OpenCodeTelegramPlugin;

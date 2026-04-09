@@ -1,16 +1,44 @@
-const { createOpenCodeEventFormatter, extractErrorMessage } = require('./format');
+const {
+  createOpenCodeEventFormatter,
+  extractErrorMessage,
+} = require("./format");
+const fs = require("node:fs/promises");
 
-const QUESTION_TOOLS = new Set(['question', 'ask_user_question', 'askuserquestion']);
+const QUESTION_TOOLS = new Set([
+  "question",
+  "ask_user_question",
+  "askuserquestion",
+]);
+
+function getLifecycleLogFile() {
+  return process.env.TELME_LOG_FILE || "/tmp/telme.log";
+}
+
+async function appendLifecycleLog(stage, payload) {
+  try {
+    const line = JSON.stringify({
+      ts: new Date().toISOString(),
+      stage,
+      ...payload,
+    });
+    await fs.appendFile(getLifecycleLogFile(), `${line}\n`, "utf8");
+  } catch (error) {
+    // Never break plugin lifecycle when file logging fails.
+  }
+}
 
 function isBusyStatus(status) {
-  return status === 'busy' || (typeof status === 'object' && status && status.type === 'busy');
+  return (
+    status === "busy" ||
+    (typeof status === "object" && status && status.type === "busy")
+  );
 }
 
 function getQuestionText(args) {
   const questions = args && args.questions;
-  if (!Array.isArray(questions) || questions.length === 0) return '';
+  if (!Array.isArray(questions) || questions.length === 0) return "";
   const questionText = questions[0] && questions[0].question;
-  return typeof questionText === 'string' ? questionText : '';
+  return typeof questionText === "string" ? questionText : "";
 }
 
 function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
@@ -28,7 +56,11 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
 
       const attempts = [
         () => client.session.messages({ sessionID: sessionId, limit: 10 }),
-        () => client.session.messages({ path: { id: sessionId }, query: { limit: 10 } }),
+        () =>
+          client.session.messages({
+            path: { id: sessionId },
+            query: { limit: 10 },
+          }),
       ];
 
       for (const attempt of attempts) {
@@ -37,10 +69,13 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
           if (Array.isArray(result && result.data)) return result.data;
           if (Array.isArray(result)) return result;
         } catch (error) {
-          await logger.warn('Failed to load session messages for notification', {
-            sessionId,
-            error: error instanceof Error ? error.message : String(error),
-          });
+          await logger.warn(
+            "Failed to load session messages for notification",
+            {
+              sessionId,
+              error: error instanceof Error ? error.message : String(error),
+            },
+          );
         }
       }
 
@@ -54,7 +89,11 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
 
     const result = await client.session.get({ sessionID: sessionId });
     if (result.error || !result.data) {
-      throw new Error(result.error ? `Failed to load session ${sessionId}` : `Session ${sessionId} not found`);
+      throw new Error(
+        result.error
+          ? `Failed to load session ${sessionId}`
+          : `Session ${sessionId} not found`,
+      );
     }
 
     sessionCache.set(result.data.id, result.data);
@@ -90,15 +129,22 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
       notifiedRootId = rootSession.id;
 
       if (rootErrors.has(rootSession.id)) {
-        await notifier.notify(await formatter.formatSessionError(rootSession, rootErrors.get(rootSession.id)));
+        await notifier.notify(
+          await formatter.formatSessionError(
+            rootSession,
+            rootErrors.get(rootSession.id),
+          ),
+        );
       } else {
-        await notifier.notify(await formatter.formatSessionCompleted(rootSession));
+        await notifier.notify(
+          await formatter.formatSessionCompleted(rootSession),
+        );
       }
 
       rootActivity.set(rootSession.id, false);
       rootErrors.delete(rootSession.id);
     } catch (error) {
-      await logger.warn('Failed to process notification event', {
+      await logger.warn("Failed to process notification event", {
         sessionId,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -117,9 +163,11 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
       if (!session.parentID) return;
 
       notifiedTaskErrors.add(sessionId);
-      await notifier.notify(await formatter.formatSessionError(session, errorMessage));
+      await notifier.notify(
+        await formatter.formatSessionError(session, errorMessage),
+      );
     } catch (error) {
-      await logger.warn('Failed to send task error notification', {
+      await logger.warn("Failed to send task error notification", {
         sessionId,
         error: error instanceof Error ? error.message : String(error),
       });
@@ -134,7 +182,7 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
       questionNotifications.set(callId, sessionId);
       await notifier.notify(formatter.formatQuestion(session, questionText));
     } catch (error) {
-      await logger.warn('Failed to send question notification', {
+      await logger.warn("Failed to send question notification", {
         sessionId,
         callId,
         error: error instanceof Error ? error.message : String(error),
@@ -150,7 +198,7 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
       permissionNotifications.set(permissionId, sessionId);
       await notifier.notify(formatter.formatPermission(session, title));
     } catch (error) {
-      await logger.warn('Failed to send permission notification', {
+      await logger.warn("Failed to send permission notification", {
         sessionId,
         permissionId,
         error: error instanceof Error ? error.message : String(error),
@@ -167,7 +215,10 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
       }
     }
 
-    for (const [permissionId, trackedSessionId] of permissionNotifications.entries()) {
+    for (const [
+      permissionId,
+      trackedSessionId,
+    ] of permissionNotifications.entries()) {
       if (trackedSessionId === sessionId) {
         permissionNotifications.delete(permissionId);
       }
@@ -175,16 +226,38 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
   }
 
   return {
-    'tool.execute.before': async (input, output) => {
+    "tool.execute.before": async (input, output) => {
+      await appendLifecycleLog("tool.execute.before", {
+        tool: input && input.tool,
+        sessionId: input && input.sessionID,
+        callId: input && input.callID,
+      });
       if (!QUESTION_TOOLS.has(input.tool)) return;
-      await notifyQuestion(input.sessionID, input.callID, getQuestionText(output && output.args));
+      await notifyQuestion(
+        input.sessionID,
+        input.callID,
+        getQuestionText(output && output.args),
+      );
     },
-    'tool.execute.after': async (input) => {
+    "tool.execute.after": async (input) => {
+      await appendLifecycleLog("tool.execute.after", {
+        tool: input && input.tool,
+        sessionId: input && input.sessionID,
+        callId: input && input.callID,
+      });
       if (!QUESTION_TOOLS.has(input.tool)) return;
       questionNotifications.delete(input.callID);
     },
     event: async ({ event }) => {
-      if (event.type === 'session.created' || event.type === 'session.updated') {
+      await appendLifecycleLog("event.received", {
+        eventType: event && event.type,
+        sessionId: event && event.properties && event.properties.sessionID,
+      });
+
+      if (
+        event.type === "session.created" ||
+        event.type === "session.updated"
+      ) {
         const info = event.properties && event.properties.info;
         if (info && info.id) {
           sessionCache.set(info.id, info);
@@ -192,23 +265,31 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
         return;
       }
 
-      if (event.type === 'session.deleted') {
-        const sessionId = event.properties && event.properties.info && event.properties.info.id;
+      if (event.type === "session.deleted") {
+        const sessionId =
+          event.properties && event.properties.info && event.properties.info.id;
         if (sessionId) {
           clearSessionNotificationState(sessionId);
         }
         return;
       }
 
-      if (event.type === 'permission.updated' || event.type === 'permission.asked') {
+      if (
+        event.type === "permission.updated" ||
+        event.type === "permission.asked"
+      ) {
         const permissionId = event.properties && event.properties.id;
         const sessionId = event.properties && event.properties.sessionID;
         if (!permissionId || !sessionId) return;
-        await notifyPermission(sessionId, permissionId, event.properties && event.properties.title);
+        await notifyPermission(
+          sessionId,
+          permissionId,
+          event.properties && event.properties.title,
+        );
         return;
       }
 
-      if (event.type === 'permission.replied') {
+      if (event.type === "permission.replied") {
         const permissionId = event.properties && event.properties.permissionID;
         if (permissionId) {
           permissionNotifications.delete(permissionId);
@@ -216,12 +297,12 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
         return;
       }
 
-      if (event.type === 'session.status') {
+      if (event.type === "session.status") {
         const sessionId = event.properties && event.properties.sessionID;
         const status = event.properties && event.properties.status;
         if (!sessionId) return;
 
-        if (status && status.type === 'idle') {
+        if (status && status.type === "idle") {
           await notifyRootSession(sessionId);
           return;
         }
@@ -232,7 +313,7 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
           const rootSession = await getRootSessionInfo(sessionId);
           rootActivity.set(rootSession.id, true);
         } catch (error) {
-          await logger.warn('Failed to resolve root session for status event', {
+          await logger.warn("Failed to resolve root session for status event", {
             sessionId,
             error: error instanceof Error ? error.message : String(error),
           });
@@ -240,13 +321,15 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
         return;
       }
 
-      if (event.type === 'session.error') {
+      if (event.type === "session.error") {
         const sessionId = event.properties && event.properties.sessionID;
         if (!sessionId) return;
 
         try {
           const session = await getSessionInfo(sessionId);
-          const errorMessage = extractErrorMessage(event.properties && event.properties.error);
+          const errorMessage = extractErrorMessage(
+            event.properties && event.properties.error,
+          );
 
           if (session.parentID) {
             await notifyTaskSessionError(sessionId, errorMessage);
@@ -257,7 +340,7 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
           rootActivity.set(rootSession.id, true);
           rootErrors.set(rootSession.id, errorMessage);
         } catch (error) {
-          await logger.warn('Failed to resolve root session for error event', {
+          await logger.warn("Failed to resolve root session for error event", {
             sessionId,
             error: error instanceof Error ? error.message : String(error),
           });
@@ -265,7 +348,7 @@ function createOpenCodeNotifierPlugin({ client, notifier, logger }) {
         return;
       }
 
-      if (event.type !== 'session.idle') return;
+      if (event.type !== "session.idle") return;
 
       const sessionId = event.properties && event.properties.sessionID;
       if (!sessionId) return;
