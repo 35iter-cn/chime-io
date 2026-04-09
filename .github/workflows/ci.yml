@@ -36,14 +36,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+      - name: Install Rush dependencies
+        run: node common/scripts/install-run-rush.js install
 
       - name: Type check
         run: pnpm typecheck
 
-      - name: Build packages
-        run: pnpm build
+      - name: Rebuild packages
+        run: node common/scripts/install-run-rush.js rebuild
 
       - name: Run tests
         run: pnpm test
