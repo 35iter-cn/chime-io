@@ -1,0 +1,18 @@
+{
+  "name": "telme",
+  "version": "1.0.0",
+  "description": "Send Telegram messages via CLI",
+  "main": "index.js",
+  "bin": {
+    "telme": "./bin/telme.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["telegram", "bot", "cli", "notify"],
+  "author": "",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
