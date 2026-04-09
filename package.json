@@ -5,7 +5,8 @@
   "scripts": {
     "install": "rush install",
     "build": "rush build",
-    "test": "rush test"
+    "test": "rush test",
+    "change": "rush change"
   },
   "devDependencies": {
     "@microsoft/rush": "5.166.0",
