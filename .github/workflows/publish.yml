@@ -69,8 +69,8 @@ jobs:
               name=$(node -p "require('./package.json').name")
               version=$(node -p "require('./package.json').version")
               echo "Checking $name@$version"
-              echo "Dry-run pack"
-              pnpm pack --dry-run
+              echo "Dry-run publish"
+              pnpm publish --dry-run --access public --no-git-checks
               # publish; fail the job if publish fails
               echo "Publishing $name@$version"
               pnpm publish --access public --no-git-checks
