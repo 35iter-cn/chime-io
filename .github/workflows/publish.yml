@@ -60,8 +60,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # configure npm auth for publish
-          echo "//registry.npmjs.org/:_authToken=${NODE_AUTH_TOKEN}" > ~/.npmrc
           set -euo pipefail
           publish_order=("packages/core" "packages/telegram" "packages/opencode" "apps/cli")
           for pkg in "${publish_order[@]}"; do
@@ -72,10 +70,10 @@ jobs:
               version=$(node -p "require('./package.json').version")
               echo "Checking $name@$version"
               echo "Dry-run pack"
-              npm pack --dry-run
+              pnpm pack --dry-run
               # publish; fail the job if publish fails
               echo "Publishing $name@$version"
-              npm publish --access public
-              cd - >/dev/null
+              pnpm publish --access public --no-git-checks
+              cd -> /dev/null
             fi
           done
