@@ -2,7 +2,7 @@
 
 See README_RELEASE.md for release and publish instructions.
 
-通知桥项目已经调整为 `pnpm workspace + turbo` 的 TypeScript monorepo。
+通知桥项目已经调整为 `pnpm workspace + Rush` 的 TypeScript monorepo。
 
 ## Workspace
 
@@ -14,14 +14,15 @@ See README_RELEASE.md for release and publish instructions.
 ## 开发命令
 
 ```bash
-pnpm install
+node common/scripts/install-run-rush.js install
 pnpm build
 pnpm build:watch
 pnpm test
 pnpm typecheck
+pnpm release:dry-run
 ```
 
-`build` 和 `build:watch` 都通过 `turbo` 调度，最终产物是各 workspace 下的 `dist/*.js`。
+`build` 通过 Rush 调度，`test` 会先触发仓库级构建，然后再用 `tsx --test` 运行测试。`release:dry-run` 会走 `rush publish --pack`，用于本地验证发布产物而不真正发布。
 
 ## 运行 CLI
 

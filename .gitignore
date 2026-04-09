@@ -4,7 +4,6 @@ node_modules/
 .env
 npm-debug.log*
 dist/
-.turbo/
 *.tsbuildinfo
 .worktrees/
 common/temp/
