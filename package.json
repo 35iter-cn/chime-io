@@ -3,15 +3,10 @@
   "private": true,
   "packageManager": "pnpm@10.6.0",
   "scripts": {
-    "install": "rush install",
-    "build": "rush build",
-    "test": "rush test",
-    "change": "rush change"
-  },
-  "devDependencies": {
-    "@microsoft/rush": "5.166.0",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3",
-    "@types/node": "^22.14.1"
+    "rush:install": "rush install",
+    "rush:update": "rush update",
+    "rush:build": "rush build",
+    "rush:test": "rush test",
+    "rush:change": "rush change"
   }
 }
