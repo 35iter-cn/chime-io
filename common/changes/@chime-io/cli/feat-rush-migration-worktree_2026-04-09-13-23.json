@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@chime-io/cli",
+      "comment": "to rush ",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@chime-io/cli"
+}

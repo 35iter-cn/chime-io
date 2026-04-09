@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@chime-io/channel-telegram",
+      "comment": "to rush",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@chime-io/channel-telegram"
+}
