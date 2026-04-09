@@ -1,0 +1,18 @@
+{
+  "name": "@chime-io/plugin-claude",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "dependencies": {
+    "@chime-io/core": "workspace:*",
+    "@chime-io/channel-telegram": "workspace:*"
+  },
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsc -b",
+    "build:watch": "tsc -b --watch --preserveWatchOutput",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "typecheck": "tsc -b --pretty false"
+  }
+}
