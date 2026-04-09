@@ -4,10 +4,10 @@
   "packageManager": "pnpm@10.6.0",
   "scripts": {
     "build": "rush build",
-    "build:watch": "pnpm -w -r run build:watch",
-    "clean": "pnpm -w -r run clean",
+    "build:watch": "pnpm -r run build:watch",
+    "clean": "pnpm -r run clean",
     "test": "pnpm build && tsx --test packages/*/test/**/*.test.ts apps/*/test/**/*.test.ts",
-    "typecheck": "pnpm -w -r run typecheck"
+    "typecheck": "pnpm -r run typecheck"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
