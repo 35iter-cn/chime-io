@@ -1,0 +1,24 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
+  "rushVersion": "~5.80.0",
+  "pnpmVersion": "10.6.0",
+  "nodeSupportedVersionRange": ">=18 <21",
+  "projects": [
+    {
+      "packageName": "@chime-io/core",
+      "projectFolder": "packages/core"
+    },
+    {
+      "packageName": "@chime-io/channel-telegram",
+      "projectFolder": "packages/telegram"
+    },
+    {
+      "packageName": "@chime-io/plugin-opencode",
+      "projectFolder": "packages/opencode"
+    },
+    {
+      "packageName": "@chime-io/cli",
+      "projectFolder": "apps/cli"
+    }
+  ]
+}
