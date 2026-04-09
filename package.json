@@ -3,11 +3,11 @@
   "private": true,
   "packageManager": "pnpm@10.6.0",
   "scripts": {
-    "build": "turbo run build",
-    "build:watch": "turbo run build:watch --parallel",
-    "clean": "turbo run clean",
-    "test": "pnpm build && tsx --test packages/*/test/**/*.test.ts apps/*/test/**/*.test.ts 2>/dev/null || echo 'No tests found'",
-    "typecheck": "turbo run typecheck"
+    "build": "rush build",
+    "build:watch": "pnpm -w -r run build:watch",
+    "clean": "pnpm -w -r run clean",
+    "test": "pnpm build && tsx --test packages/*/test/**/*.test.ts apps/*/test/**/*.test.ts",
+    "typecheck": "pnpm -w -r run typecheck"
   },
   "devDependencies": {
     "@types/node": "^22.14.1",
