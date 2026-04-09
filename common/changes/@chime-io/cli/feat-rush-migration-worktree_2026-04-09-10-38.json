@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "chore: migration validation for Rush change/publish path",
+      "type": "patch",
+      "packageName": "@chime-io/cli"
+    }
+  ],
+  "packageName": "@chime-io/cli",
+  "email": "migration-validation@example.com"
+}

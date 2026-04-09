@@ -6,19 +6,27 @@
   "projects": [
     {
       "packageName": "@chime-io/core",
-      "projectFolder": "packages/core"
+      "projectFolder": "packages/core",
+      "shouldPublish": true,
+      "versionPolicyName": "individual"
     },
     {
       "packageName": "@chime-io/channel-telegram",
-      "projectFolder": "packages/telegram"
+      "projectFolder": "packages/telegram",
+      "shouldPublish": true,
+      "versionPolicyName": "individual"
     },
     {
       "packageName": "@chime-io/plugin-opencode",
-      "projectFolder": "packages/opencode"
+      "projectFolder": "packages/opencode",
+      "shouldPublish": true,
+      "versionPolicyName": "individual"
     },
     {
       "packageName": "@chime-io/cli",
-      "projectFolder": "apps/cli"
+      "projectFolder": "apps/cli",
+      "shouldPublish": true,
+      "versionPolicyName": "individual"
     }
   ]
 }
