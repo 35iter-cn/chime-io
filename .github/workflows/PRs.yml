@@ -1,22 +1,22 @@
-name: CI
+name: Pull Request Validation
 
 on:
   pull_request:
-    branches: [main]
-  push:
+    types: [opened, synchronize, reopened]
     branches: [main]
 
 jobs:
-  quality:
+  validate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Enable pnpm
         run: |
@@ -32,18 +32,18 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
-      - name: Install Rush dependencies
-        run: node common/scripts/install-run-rush.js install
+      - name: Verify change logs
+        run: node common/scripts/install-run-rush.js change --verify
 
-      - name: Type check
-        run: pnpm typecheck
+      - name: Install dependencies
+        run: node common/scripts/install-run-rush.js install
 
       - name: Rebuild packages
         run: node common/scripts/install-run-rush.js rebuild
 
       - name: Run tests
-        run: pnpm test
+        run: node common/scripts/install-run-rush.js test
