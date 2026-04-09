@@ -59,8 +59,18 @@ jobs:
           echo "version=$BETA_VERSION" >> $GITHUB_OUTPUT
           echo "Beta version: $BETA_VERSION"
 
+      - name: Bump prerelease versions
+        run: |
+          node common/scripts/install-run-rush.js version --bump \
+            --override-prerelease-id ${{ steps.beta.outputs.version }} \
+            --target-branch main
+
       - name: Publish prerelease
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          node common/scripts/install-run-rush.js publish --publish --prerelease-name ${{ steps.beta.outputs.version }} --tag beta --apply --target-branch ${{ github.ref_name }} --include-all --version-policy individual --set-access-level public
+          node common/scripts/install-run-rush.js publish --publish \
+            --tag beta \
+            --target-branch main \
+            --include-all \
+            --set-access-level public
