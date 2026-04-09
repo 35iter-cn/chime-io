@@ -50,25 +50,14 @@ jobs:
               exit 0
             fi
 
+            # 构建 issue body
+            BODY=$(printf '## 提醒\n\nNPM_TOKEN 将于 **%s 天后**过期。\n\n- 创建日期: %s\n- 有效期: %s 天\n- 建议提前 %s 天轮换\n\n## 轮换步骤\n\n1. 访问 https://www.npmjs.com/settings/YOUR_USERNAME/tokens\n2. 创建新的 Granular Access Token (建议有效期 90 天)\n3. 更新 GitHub Secret: https://github.com/%s/settings/secrets/actions\n4. 更新本文件中的 TOKEN_CREATED 日期\n5. 关闭此 issue\n\n@%s' \
+              "$DAYS_LEFT" "$TOKEN_CREATED" "$EXPIRY_DAYS" "$WARNING_DAYS" \
+              "${{ github.repository }}" "${{ github.repository_owner }}")
+
             gh issue create \
               --title "⚠️ NPM Token 即将过期（剩 $DAYS_LEFT 天）" \
-              --body "## 提醒
-
-NPM_TOKEN 将于 **$DAYS_LEFT 天后**过期。
-
-- 创建日期: $TOKEN_CREATED
-- 有效期: $EXPIRY_DAYS 天
-- 建议提前 $WARNING_DAYS 天轮换
-
-## 轮换步骤
-
-1. 访问 https://www.npmjs.com/settings/YOUR_USERNAME/tokens
-2. 创建新的 Granular Access Token (建议有效期 90 天)
-3. 更新 GitHub Secret: \`https://github.com/${{ github.repository }}/settings/secrets/actions\`
-4. 更新 \`.github/workflows/token-expiry-reminder.yml\` 中的 \`TOKEN_CREATED\` 日期
-5. 关闭此 issue
-
-@${{ github.repository_owner }}" \
+              --body "$BODY" \
               --label "maintenance,npm-token" \
               --repo ${{ github.repository }} || true
           else
