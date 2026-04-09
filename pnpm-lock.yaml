@@ -23,27 +23,27 @@ importers:
 
   apps/cli:
     dependencies:
-      '@telnotify/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@telnotify/telegram':
+      '@chime-io/channel-telegram':
         specifier: workspace:*
         version: link:../../packages/telegram
+      '@chime-io/core':
+        specifier: workspace:*
+        version: link:../../packages/core
 
   packages/core: {}
 
   packages/opencode:
     dependencies:
-      '@telnotify/core':
-        specifier: workspace:*
-        version: link:../core
-      '@telnotify/telegram':
+      '@chime-io/channel-telegram':
         specifier: workspace:*
         version: link:../telegram
+      '@chime-io/core':
+        specifier: workspace:*
+        version: link:../core
 
   packages/telegram:
     dependencies:
-      '@telnotify/core':
+      '@chime-io/core':
         specifier: workspace:*
         version: link:../core
 
