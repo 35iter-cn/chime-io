@@ -1,0 +1,36 @@
+name: NPM Token Expiry Reminder
+
+on:
+  schedule:
+    # 每月 1 号检查
+    - cron: '0 0 1 * *'
+  workflow_dispatch:
+
+jobs:
+  check-token:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check NPM_TOKEN expiry
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # 设置 token 创建日期（每次轮换后更新这里）
+          TOKEN_CREATED="2026-04-09"
+          EXPIRY_DAYS=90
+          
+          # 计算剩余天数
+          CREATED_EPOCH=$(date -d "$TOKEN_CREATED" +%s)
+          NOW_EPOCH=$(date +%s)
+          DAYS_PASSED=$(( (NOW_EPOCH - CREATED_EPOCH) / 86400 ))
+          DAYS_LEFT=$(( EXPIRY_DAYS - DAYS_PASSED ))
+          
+          echo "Token 已使用 $DAYS_PASSED 天，还剩 $DAYS_LEFT 天"
+          
+          # 如果剩余少于 14 天，创建提醒
+          if [ $DAYS_LEFT -le 14 ]; then
+            gh issue create \
+              --title "⚠️ NPM Token 即将过期（剩 $DAYS_LEFT 天）" \
+              --body "NPM_TOKEN 将于 $DAYS_LEFT 天后过期（创建日期: $TOKEN_CREATED）。\n\n请执行以下步骤轮换：\n\n1. 访问 https://www.npmjs.com/settings/YOUR_USERNAME/tokens\n2. 创建新的 Granular Access Token\n3. 更新 GitHub Secret: https://github.com/${{ github.repository }}/settings/secrets/actions\n4. 更新本文件中的 TOKEN_CREATED 日期\n\n@${{ github.repository_owner }}" \
+              --label "maintenance" \
+              --repo ${{ github.repository }} || true
+          fi
