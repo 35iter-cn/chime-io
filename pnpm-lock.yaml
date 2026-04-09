@@ -29,8 +29,22 @@ importers:
       '@chime-io/core':
         specifier: workspace:*
         version: link:../../packages/core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.19.17
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
 
-  packages/core: {}
+  packages/core:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.19.17
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
 
   packages/opencode:
     dependencies:
@@ -40,12 +54,26 @@ importers:
       '@chime-io/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.19.17
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
 
   packages/telegram:
     dependencies:
       '@chime-io/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      '@types/node':
+        specifier: ^22.14.1
+        version: 22.19.17
+      typescript:
+        specifier: ^5.8.3
+        version: 5.9.3
 
 packages:
 
