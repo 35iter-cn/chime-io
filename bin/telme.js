@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const https = require('https');
+const { createNotification, createTelegramChannel } = require('..');
 
 function showHelp() {
   console.log(`
@@ -10,7 +10,7 @@ Options:
   -t, --token <token>      Telegram bot token
   -u, --user <user_id>     Target user ID
   -m, --message <text>     Message text
-  --html                   Use HTML parse mode (default: MarkdownV2)
+  --html                   Use HTML parse mode (default: HTML)
   --silent                 Send message silently (no notification)
   -h, --help               Show this help
 
@@ -30,7 +30,7 @@ function parseArgs(args) {
     token: process.env.TELEGRAM_BOT_TOKEN,
     userId: process.env.TELEGRAM_USER_ID,
     message: '',
-    parseMode: 'MarkdownV2',
+    parseMode: 'HTML',
     silent: false
   };
 
@@ -72,56 +72,6 @@ function parseArgs(args) {
   return options;
 }
 
-function sendMessage(token, userId, message, parseMode, silent) {
-  return new Promise((resolve, reject) => {
-    const payload = JSON.stringify({
-      chat_id: userId,
-      text: message,
-      parse_mode: parseMode,
-      disable_notification: silent
-    });
-
-    const options = {
-      hostname: 'api.telegram.org',
-      port: 443,
-      path: `/bot${token}/sendMessage`,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(payload)
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let data = '';
-
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
-
-      res.on('end', () => {
-        try {
-          const result = JSON.parse(data);
-          if (result.ok) {
-            resolve(result.result);
-          } else {
-            reject(new Error(`Telegram API Error: ${result.description}`));
-          }
-        } catch (err) {
-          reject(new Error(`Failed to parse response: ${err.message}`));
-        }
-      });
-    });
-
-    req.on('error', (err) => {
-      reject(new Error(`Request failed: ${err.message}`));
-    });
-
-    req.write(payload);
-    req.end();
-  });
-}
-
 async function main() {
   const args = process.argv.slice(2);
 
@@ -148,13 +98,18 @@ async function main() {
   }
 
   try {
-    const result = await sendMessage(
-      options.token,
-      options.userId,
-      options.message,
-      options.parseMode,
-      options.silent
-    );
+    const channel = createTelegramChannel({
+      token: options.token,
+      userId: options.userId,
+      parseMode: options.parseMode,
+      silent: options.silent
+    });
+    const result = await channel.send(createNotification({
+      agent: 'cli',
+      kind: 'manual.message',
+      title: options.message,
+      lines: []
+    }));
     console.log(`Message sent successfully! Message ID: ${result.message_id}`);
   } catch (err) {
     console.error(`Failed to send message: ${err.message}`);

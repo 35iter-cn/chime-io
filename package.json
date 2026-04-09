@@ -7,7 +7,7 @@
     "telme": "./bin/telme.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test"
   },
   "keywords": ["telegram", "bot", "cli", "notify"],
   "author": "",
