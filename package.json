@@ -6,7 +6,7 @@
     "build": "node common/scripts/install-run-rush.js build",
     "build:watch": "pnpm -r run build:watch",
     "clean": "pnpm -r run clean",
-    "test": "node common/scripts/install-run-rush.js build && node --test packages/*/test/**/*.test.ts apps/*/test/**/*.test.ts",
+    "test": "node common/scripts/install-run-rush.js build && node common/scripts/install-run.js tsx@4.19.3 tsx --test packages/*/test/*.test.ts apps/*/test/*.test.ts",
     "typecheck": "pnpm -r run typecheck"
   },
   "devDependencies": {
