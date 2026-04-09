@@ -8,6 +8,7 @@
     "@chime-io/core": "workspace:*",
     "@chime-io/channel-telegram": "workspace:*"
   },
+  "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsc -b",
     "build:watch": "tsc -b --watch --preserveWatchOutput",

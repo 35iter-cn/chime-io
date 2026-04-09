@@ -5,6 +5,7 @@
   "bin": {
     "chime": "./dist/index.js"
   },
+  "publishConfig": { "access": "public" },
   "dependencies": {
     "@chime-io/core": "workspace:*",
     "@chime-io/channel-telegram": "workspace:*"

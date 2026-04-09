@@ -3,6 +3,11 @@ name: Build and Publish
 on:
   push:
     branches: [ main ]
+  create:
+    tags:      # keep builds on tag creation for release flow
+      - 'v*'
+  release:
+    types: [published]
 
 jobs:
   build:
@@ -29,7 +34,7 @@ jobs:
   publish:
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    if: startsWith(github.ref, 'refs/tags/v') || github.event_name == 'release'
     steps:
       - uses: actions/checkout@v4
 
@@ -48,17 +53,24 @@ jobs:
       - name: Build packages
         run: pnpm -w build
 
-      - name: Publish packages
+      - name: Publish packages (pack check then publish)
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          # publish each package if not private
-          for pkg in packages/core packages/telegram packages/opencode apps/cli; do
+          set -euo pipefail
+          publish_order=("packages/core" "packages/telegram" "packages/opencode" "apps/cli")
+          for pkg in "${publish_order[@]}"; do
             if [ -f "$pkg/package.json" ]; then
+              echo "--- Processing $pkg ---"
               cd $pkg
               name=$(node -p "require('./package.json').name")
-              # attempt publish; exit code ignored to allow other packages to proceed
-              npm publish --access public || true
+              version=$(node -p "require('./package.json').version")
+              echo "Checking $name@$version"
+              echo "Dry-run pack"
+              npm pack --dry-run
+              # publish; fail the job if publish fails
+              echo "Publishing $name@$version"
+              npm publish --access public
               cd - >/dev/null
             fi
           done

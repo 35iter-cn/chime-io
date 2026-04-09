@@ -13,6 +13,7 @@
   "dependencies": {
     "@chime-io/core": "workspace:*"
   },
+  "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsc -b",
     "build:watch": "tsc -b --watch --preserveWatchOutput",
