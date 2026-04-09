@@ -11,8 +11,9 @@ Release and publish guide
 - This stays read-only and should print `* DRYRUN:` pack lines for each publishable package, verifying the `rush change -> rush publish --pack` path without publishing anything.
 
 3. Create a release (recommended)
-- Tag a release: git tag v1.2.3 && git push origin main --tags
-- Or use GitHub Releases UI to create a release. The release workflow installs with Rush and publishes via `rush publish`.
+- Create and push the version tag first if needed: `git tag v1.2.3 && git push origin v1.2.3`
+- Then publish a GitHub Release for that tag, either in the GitHub Releases UI or with `gh release create`.
+- The release workflow runs only when the GitHub Release is published; pushing a tag by itself does not trigger publishing.
 
 4. Troubleshooting
 - If publish fails with E403, ensure the npm token has publish rights and the package scope is allowed for publishing.
