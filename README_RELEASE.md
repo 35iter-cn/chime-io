@@ -7,7 +7,8 @@ Release and publish guide
 2. Local release check
 - Build: node common/scripts/install-run-rush.js build
 - Verify change files: node common/scripts/install-run-rush.js change --verify
-- Dry-run pack for a package: cd packages/cli && npm pack --dry-run
+- Run the repository-level dry-run: pnpm release:dry-run
+- This stays read-only and should print `* DRYRUN:` pack lines for each publishable package, verifying the `rush change -> rush publish --pack` path without publishing anything.
 
 3. Create a release (recommended)
 - Tag a release: git tag v1.2.3 && git push origin main --tags

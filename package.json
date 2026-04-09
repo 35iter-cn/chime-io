@@ -6,6 +6,7 @@
     "build": "node common/scripts/install-run-rush.js build",
     "build:watch": "pnpm -r run build:watch",
     "clean": "pnpm -r run clean",
+    "release:dry-run": "node common/scripts/install-run-rush.js publish --include-all --version-policy individual --pack",
     "test": "node common/scripts/install-run-rush.js build && node common/scripts/install-run.js tsx@4.19.3 tsx --test packages/*/test/*.test.ts apps/*/test/*.test.ts",
     "typecheck": "pnpm -r run typecheck"
   },
