@@ -1,12 +1,12 @@
 {
-  "name": "@telnotify/opencode",
+  "name": "@chime-io/plugin-opencode",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@telnotify/core": "workspace:*",
-    "@telnotify/telegram": "workspace:*"
+    "@chime-io/core": "workspace:*",
+    "@chime-io/channel-telegram": "workspace:*"
   },
   "scripts": {
     "build": "tsc -b",

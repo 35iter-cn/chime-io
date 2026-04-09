@@ -1,13 +1,13 @@
 {
-  "name": "telme",
+  "name": "@chime-io/cli",
   "version": "1.0.0",
   "type": "module",
   "bin": {
-    "telme": "./dist/index.js"
+    "chime": "./dist/index.js"
   },
   "dependencies": {
-    "@telnotify/core": "workspace:*",
-    "@telnotify/telegram": "workspace:*"
+    "@chime-io/core": "workspace:*",
+    "@chime-io/channel-telegram": "workspace:*"
   },
   "scripts": {
     "build": "tsc -b",

@@ -1,5 +1,5 @@
 {
-  "name": "@telnotify/telegram",
+  "name": "@chime-io/channel-telegram",
   "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
@@ -11,7 +11,7 @@
     }
   },
   "dependencies": {
-    "@telnotify/core": "workspace:*"
+    "@chime-io/core": "workspace:*"
   },
   "scripts": {
     "build": "tsc -b",

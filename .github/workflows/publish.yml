@@ -1,0 +1,64 @@
+name: Build and Publish
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build all packages
+        run: pnpm -w build
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install pnpm
+        run: npm install -g pnpm
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build packages
+        run: pnpm -w build
+
+      - name: Publish packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          # publish each package if not private
+          for pkg in packages/core packages/telegram packages/opencode apps/cli; do
+            if [ -f "$pkg/package.json" ]; then
+              cd $pkg
+              name=$(node -p "require('./package.json').name")
+              # attempt publish; exit code ignored to allow other packages to proceed
+              npm publish --access public || true
+              cd - >/dev/null
+            fi
+          done
