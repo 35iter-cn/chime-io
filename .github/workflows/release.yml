@@ -25,34 +25,33 @@ jobs:
           corepack enable
           corepack prepare pnpm@10.6.0 --activate
 
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-
       - name: Setup pnpm cache
         uses: actions/cache@v4
         with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          path: |
+            ~/.pnpm-store
+            common/temp/pnpm-store
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('common/config/rush/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: node common/scripts/install-run-rush.js install
 
       - name: Type check
         run: pnpm typecheck
 
       - name: Build packages
-        run: pnpm build
+        run: node common/scripts/install-run-rush.js build
 
       - name: Run tests
         run: pnpm test
+
+      - name: Verify change files
+        run: node common/scripts/install-run-rush.js change --verify
 
       - name: Publish packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          echo "Publishing all packages..."
-          pnpm -r publish --access public --no-git-checks
+          node common/scripts/install-run-rush.js publish --publish --include-all --version-policy individual --set-access-level public
