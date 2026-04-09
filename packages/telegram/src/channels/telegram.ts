@@ -2,7 +2,7 @@ import {
   createMessageRenderer,
   type MessageRenderer,
   type NotificationChannel,
-} from '@telnotify/core';
+} from '@chime-io/core';
 
 import { postJson, type JsonPost } from '../transport/https.js';
 

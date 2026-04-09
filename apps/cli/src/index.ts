@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import { createNotification } from '@telnotify/core';
-import { createTelegramChannel } from '@telnotify/telegram';
+import { createNotification } from '@chime-io/core';
+import { createTelegramChannel } from '@chime-io/channel-telegram';
 import { pathToFileURL } from 'node:url';
 
 export interface CliOptions {

@@ -14,12 +14,7 @@
     "composite": true,
     "incremental": true,
     "baseUrl": ".",
-    "paths": {
-      "@telnotify/core": ["packages/core/src/index.ts"],
-      "@telnotify/telegram": ["packages/telegram/src/index.ts"],
-      "@telnotify/opencode": ["packages/opencode/src/index.ts"],
-      "@telnotify/opencode/plugin": ["packages/opencode/src/plugin.ts"]
-    },
+
     "rootDir": "./src",
     "outDir": "./dist",
     "lib": ["ES2022"],

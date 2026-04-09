@@ -15,8 +15,8 @@
 - 类型检查：pnpm typecheck
 
 单包命令示例
-- 构建单个包：pnpm --filter @telnotify/core build
-- 运行单个包测试（如果需要）：pnpm --filter @telnotify/core test
+- 构建单个包：pnpm --filter @chime-io/core build
+- 运行单个包测试（如果需要）：pnpm --filter @chime-io/core test
 
 构建与测试细节（可验证行为）
 - package.json 的 top-level "test" 脚本会先执行 pnpm build（即先构建再跑测试）。

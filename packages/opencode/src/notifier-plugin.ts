@@ -1,6 +1,6 @@
 import fs from 'node:fs/promises';
 
-import type { Notifier } from '@telnotify/core';
+import type { Notifier } from '@chime-io/core';
 
 import {
   createOpenCodeEventFormatter,

@@ -1,5 +1,5 @@
-import { createNotifier } from "@telnotify/core";
-import { createTelegramChannel } from "@telnotify/telegram";
+import { createNotifier } from "@chime-io/core";
+import { createTelegramChannel } from "@chime-io/channel-telegram";
 
 import {
   createOpenCodeNotifierPlugin,
