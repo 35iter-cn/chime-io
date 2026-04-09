@@ -1,0 +1,18 @@
+{
+  "name": "telme",
+  "version": "1.0.0",
+  "type": "module",
+  "bin": {
+    "telme": "./dist/index.js"
+  },
+  "dependencies": {
+    "@telnotify/core": "workspace:*",
+    "@telnotify/telegram": "workspace:*"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "build:watch": "tsc -b --watch --preserveWatchOutput",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "typecheck": "tsc -b --pretty false"
+  }
+}

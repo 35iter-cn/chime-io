@@ -3,3 +3,6 @@ node_modules/
 .DS_Store
 .env
 npm-debug.log*
+dist/
+.turbo/
+*.tsbuildinfo

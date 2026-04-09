@@ -1,29 +1,18 @@
 {
-  "name": "telme",
-  "version": "1.0.0",
-  "description": "Send Telegram messages via CLI",
-  "main": "./plugins/opencode-telegram.mjs",
-  "bin": {
-    "telme": "./bin/telme.js"
-  },
-  "exports": {
-    ".": {
-      "import": "./plugins/opencode-telegram.mjs",
-      "require": "./plugins/opencode-telegram.mjs"
-    }
-  },
+  "name": "telnotify-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.6.0",
   "scripts": {
-    "test": "node --test"
+    "build": "turbo run build",
+    "build:watch": "turbo run build:watch --parallel",
+    "clean": "turbo run clean",
+    "test": "pnpm build && tsx --test packages/*/test/**/*.test.ts apps/*/test/**/*.test.ts",
+    "typecheck": "turbo run typecheck"
   },
-  "keywords": [
-    "telegram",
-    "bot",
-    "cli",
-    "notify"
-  ],
-  "author": "",
-  "license": "MIT",
-  "engines": {
-    "node": ">=16.0.0"
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "tsx": "^4.19.3",
+    "turbo": "^2.5.0",
+    "typescript": "^5.8.3"
   }
 }
