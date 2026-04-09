@@ -8,3 +8,4 @@ dist/
 *.tsbuildinfo
 .worktrees/
 common/temp/
+.rush/

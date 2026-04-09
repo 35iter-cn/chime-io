@@ -1,0 +1,35 @@
+lockfileVersion: '6.0'
+
+settings:
+  autoInstallPeers: false
+  excludeLinksFromLockfile: false
+
+importers:
+
+  .: {}
+
+  ../../apps/cli:
+    dependencies:
+      '@chime-io/channel-telegram':
+        specifier: workspace:*
+        version: link:../../packages/telegram
+      '@chime-io/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+
+  ../../packages/core: {}
+
+  ../../packages/opencode:
+    dependencies:
+      '@chime-io/channel-telegram':
+        specifier: workspace:*
+        version: link:../telegram
+      '@chime-io/core':
+        specifier: workspace:*
+        version: link:../core
+
+  ../../packages/telegram:
+    dependencies:
+      '@chime-io/core':
+        specifier: workspace:*
+        version: link:../core
