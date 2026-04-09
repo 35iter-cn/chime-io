@@ -8,7 +8,9 @@
     "@chime-io/core": "workspace:*",
     "@chime-io/channel-telegram": "workspace:*"
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@types/node": "^22.14.1",
     "typescript": "^5.8.3"
@@ -16,6 +18,7 @@
   "scripts": {
     "build": "tsc -b",
     "build:watch": "tsc -b --watch --preserveWatchOutput",
+    "test": "tsx --test test/**/*.test.ts",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "typecheck": "tsc -b --pretty false"
   }
