@@ -1,11 +1,15 @@
-name: Build
+name: Release
 
 on:
-  push:
-    branches: [main]
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  id-token: write  # For npm provenance
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -40,8 +44,15 @@ jobs:
       - name: Type check
         run: pnpm typecheck
 
-      - name: Build all packages
+      - name: Build packages
         run: pnpm build
 
       - name: Run tests
         run: pnpm test
+
+      - name: Publish packages
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          echo "Publishing all packages..."
+          pnpm -r publish --access public --no-git-checks
