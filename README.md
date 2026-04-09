@@ -1,5 +1,7 @@
 # chime-io
 
+CI: Testing workflow
+
 See README_RELEASE.md for release and publish instructions.
 
 通知桥项目已经调整为 `pnpm workspace + turbo` 的 TypeScript monorepo。
