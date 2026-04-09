@@ -8,3 +8,5 @@ dist/
 .worktrees/
 common/temp/
 .rush/
+
+node-compile-cache/
