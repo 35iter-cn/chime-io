@@ -12,9 +12,9 @@
     "access": "public"
   },
   "devDependencies": {
-    "@types/node": "^22.14.1",
+    "@types/node": "~25.5.2",
     "typescript": "^5.8.3",
-    "tsx": "^4.19.3"
+    "tsx": "~4.21.0"
   },
   "scripts": {
     "build": "tsc -b",

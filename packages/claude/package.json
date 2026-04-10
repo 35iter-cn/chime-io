@@ -5,14 +5,20 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@chime-io/core": "workspace:*",
-    "@chime-io/channel-telegram": "workspace:*"
+    "@chime-io/channel-telegram": "workspace:*",
+    "@chime-io/core": "workspace:*"
   },
-  "publishConfig": { "access": "public" },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -b",
     "build:watch": "tsc -b --watch --preserveWatchOutput",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "typecheck": "tsc -b --pretty false"
+  },
+  "devDependencies": {
+    "@types/node": "~25.5.2",
+    "tsx": "~4.21.0"
   }
 }

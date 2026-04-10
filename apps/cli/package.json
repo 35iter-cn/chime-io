@@ -11,8 +11,9 @@
     "@chime-io/channel-telegram": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.14.1",
-    "typescript": "^5.8.3"
+    "@types/node": "~25.5.2",
+    "typescript": "^5.8.3",
+    "tsx": "~4.21.0"
   },
   "scripts": {
     "build": "tsc -b",
