@@ -21,7 +21,7 @@ jobs:
       - name: Enable pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@10.6.0 --activate
+          corepack prepare pnpm@10.12.1 --activate
 
       - name: Get pnpm store directory
         shell: bash
