@@ -14,15 +14,17 @@
     "@chime-io/core": "workspace:*"
   },
   "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "tsx --test src/test/**/*.test.ts",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit --pretty false"
+  },
   "devDependencies": {
     "@types/node": "~25.5.2",
-    "typescript": "^5.8.3",
-    "tsx": "~4.21.0"
-  },
-  "scripts": {
-    "build": "tsc -b",
-    "build:watch": "tsc -b --watch --preserveWatchOutput",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "typecheck": "tsc -b --pretty false"
+    "tsup": "~8.4.0",
+    "tsx": "~4.21.0",
+    "typescript": "^5.8.3"
   }
 }
