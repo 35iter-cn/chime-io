@@ -2,8 +2,6 @@
   "name": "@chime-io/plugin-claude",
   "version": "1.0.1",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
   "dependencies": {
     "@chime-io/channel-telegram": "workspace:*",
     "@chime-io/core": "workspace:*"
@@ -12,13 +10,15 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -b",
-    "build:watch": "tsc -b --watch --preserveWatchOutput",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "typecheck": "tsc -b --pretty false"
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "tsx --test src/test/notifier.test.ts",
+    "clean": "rm -rf dist tsconfig.check.tsbuildinfo",
+    "typecheck": "tsc --pretty false"
   },
   "devDependencies": {
     "@types/node": "~25.5.2",
+    "tsup": "~8.4.0",
     "tsx": "~4.21.0"
   }
 }

@@ -3,7 +3,11 @@
  * Hook: PermissionRequest - Notify when Claude Code needs user permission
  */
 
-import { sendNotification, formatPermissionRequest } from './lib/notifier.js';
+import {
+  createApproveResponse,
+  formatPermissionRequest,
+  sendNotification,
+} from './notifier.js';
 
 async function main() {
   const stdin = process.stdin;
@@ -20,19 +24,10 @@ async function main() {
     const text = formatPermissionRequest(hookInput);
     await sendNotification({ text });
 
-    // Return success response
-    console.log(JSON.stringify({
-      decision: 'approve',
-      reason: '',
-      systemMessage: ''
-    }));
+    console.log(JSON.stringify(createApproveResponse()));
   } catch (error) {
     console.error('Error in notify-permission hook:', error);
-    console.log(JSON.stringify({
-      decision: 'approve',
-      reason: '',
-      systemMessage: ''
-    }));
+    console.log(JSON.stringify(createApproveResponse()));
   }
 }
 

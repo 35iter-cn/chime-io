@@ -73,13 +73,17 @@ cp -r packages/claude ~/.claude/plugins/chime-io-notifier
 claude config set enabledPlugins '["chime-io-notifier"]'
 ```
 
-依赖环境变量（与 OpenCode 相同）：
+依赖环境变量：
 
 ```bash
 export TELEGRAM_BOT_TOKEN="your_bot_token"
 export TELEGRAM_USER_ID="your_user_id"
 export TELEGRAM_PARSE_MODE="HTML"
 export TELEGRAM_SILENT="0"
+export CLAUDE_NOTIFY_DETAIL_LEVEL="medium"
+export CLAUDE_NOTIFY_INCLUDE_STATS="true"
+export CLAUDE_NOTIFY_INCLUDE_GIT="true"
+export CLAUDE_NOTIFY_TOOL_FILTER="Bash|Edit"
 ```
 
 支持的事件钩子：
@@ -87,6 +91,9 @@ export TELEGRAM_SILENT="0"
 - `PermissionRequest` - 需要用户确认时通知
 - `Notification` - 重要通知时通知
 - `UserPromptSubmit` - 用户提问时通知
+- `PostToolUseFailure` - 工具失败时通知
+- `SubagentStart` - 已注册，默认静默
+- `SubagentStop` - 子代理高信号总结时通知
 
 ### 通过本地 Marketplace 安装（推荐开发用）
 

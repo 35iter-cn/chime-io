@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/notify-stop.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-stop.js",
             "async": true
           }
         ]
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/notify-permission.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-permission.js",
             "async": true
           }
         ]
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/notify-notification.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-notification.js",
             "async": true
           }
         ]
@@ -43,7 +43,43 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/hooks/notify-question.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-question.js",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-tool-use.js",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-subagent.js",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-subagent.js",
             "async": true
           }
         ]
