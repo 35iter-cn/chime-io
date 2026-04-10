@@ -6,10 +6,10 @@ See README_RELEASE.md for release and publish instructions.
 
 ## Workspace
 
-- `packages/core`: 通知模型、renderer、notifier
-- `packages/telegram`: Telegram channel 和 HTTP transport
+- `packages/core`: 通知模型、renderer、notifier、logger
+- `packages/channel-telegram`: Telegram channel 和 HTTP transport
 - `packages/opencode`: OpenCode formatter 与插件入口
-- `packages/claude`: Claude Code formatter 与插件入口
+- `packages/claude`: Claude Code hooks 实现
 - `packages/cli`: `chime` CLI
 
 ## 开发命令
@@ -88,13 +88,12 @@ export CLAUDE_NOTIFY_TOOL_FILTER="Bash|Edit"
 ```
 
 支持的事件钩子：
-- `Stop` - 会话完成时通知
+- `Stop` - 会话完成时通知（包含最后一条 Agent 消息）
+- `Error` - 会话报错时通知（包含错误详情）
 - `PermissionRequest` - 需要用户确认时通知
-- `Notification` - 重要通知时通知
 - `UserPromptSubmit` - 用户提问时通知
-- `PostToolUseFailure` - 工具失败时通知
-- `SubagentStart` - 已注册，默认静默
-- `SubagentStop` - 子代理高信号总结时通知
+
+消息内容包含：Agent 名称、会话标题、完整 sessionId、详细消息内容
 
 ### 通过本地 Marketplace 安装（推荐开发用）
 

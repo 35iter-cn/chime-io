@@ -53,13 +53,17 @@ flowchart TB
 | `@chime-io/plugin-claude` | Claude Code 的 hooks 实现 | `src/notify-*.ts` |
 | `@chime-io/plugin-opencode` | OpenCode 的 plugin 实现 | `src/index.ts` |
 
-**处理的事件类型**：
-- `session.stop` - 会话结束通知
-- `permission.request` - 权限请求通知
-- `notification` - 一般通知
-- `question` - 用户提问通知
-- `tool.failure` - 工具执行失败通知
-- `subagent.complete` - 子代理完成通知
+**Claude Plugin 处理的事件类型**：
+- `session.stop` - 会话完成通知（`notify-stop`）
+- `session.error` - 会话错误通知（`notify-error`）
+- `permission.request` - 权限请求通知（`notify-permission`）
+- `question` - 用户提问通知（`notify-question`）
+
+**消息内容规范**（所有事件遵循统一格式）：
+- **Agent 名称**: `claude`
+- **会话标题**: 从工作目录提取的项目名
+- **完整 sessionId**: 存储在 `metadata.fullSessionId`
+- **详细内容**: 根据事件类型包含相应详情（如最后消息、错误内容等）
 
 ### 2. Core 层（通用能力层）
 
@@ -149,9 +153,9 @@ sequenceDiagram
 - ✅ Claude Code Plugin 实现
 - ✅ OpenCode Plugin 实现
 
-### Phase 2: 增强核心（进行中）
+### Phase 2: 增强核心（已完成）
 
-- 🔄 Logger 模块增强（日志轮转、结构化日志）
+- ✅ Logger 模块增强（日志轮转、结构化日志、Agent 标识）
 - ⏳ 消息队列支持（处理高峰期消息）
 - ⏳ 消息模板系统（支持自定义模板）
 
@@ -221,4 +225,4 @@ flowchart TB
 
 ---
 
-*文档版本: 1.0 | 最后更新: 2026-04-11*
+*文档版本: 1.1 | 最后更新: 2026-04-11*

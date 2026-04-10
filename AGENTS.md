@@ -6,7 +6,7 @@
 
 ## 仓库结构
 - 这是一个 pnpm + Rush monorepo，Node 版本要求是 `>=20 <25`。
-- 根 `package.json` 当前声明 `pnpm@10.12.1`，`rush.json` / CI 当前固定 `pnpm@10.6.0`；处理版本差异时优先信实际执行环境。
+- 根 `package.json` 声明 `pnpm@10.12.1`，`rush.json` 与 CI workflow 统一使用 `pnpm@10.12.1`。
 - Rush 项目边界在 `rush.json`：`packages/core`、`packages/telegram`、`packages/opencode`、`packages/claude`、`packages/cli`。
 - 关键入口：`packages/opencode/src/index.ts`、`packages/claude/src/index.ts`、`packages/cli/src/index.ts`。
 
