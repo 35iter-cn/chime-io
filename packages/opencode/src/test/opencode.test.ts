@@ -9,8 +9,8 @@ import {
   extractLastErrorFromMessages,
   extractLastResultFromMessages,
   formatChangeSummary,
-} from "../dist/format.js";
-import { createOpenCodeNotifierPlugin } from "../dist/notifier-plugin.js";
+} from "../../dist/format.cjs";
+import { createOpenCodeNotifierPlugin } from "../../dist/notifier-plugin.cjs";
 
 test("formatChangeSummary keeps additions deletions and file count", () => {
   assert.equal(

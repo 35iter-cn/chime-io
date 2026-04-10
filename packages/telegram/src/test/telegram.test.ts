@@ -1,9 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createNotification } from '../../core/dist/index.js';
+import { createNotification } from '@chime-io/core';
 
-import { createTelegramChannel } from '../dist/index.js';
+import { createTelegramChannel } from '../../dist/index.cjs';
 
 test('createTelegramChannel validates token and userId', () => {
   assert.throws(() => createTelegramChannel({ token: '', userId: '42' }), /Telegram bot token is required/);

@@ -15,6 +15,6 @@ test('workspace test script builds via Rush directly before running tests', () =
 
   assert.equal(
     packageJson.scripts?.test,
-    'pnpm exec rush build && pnpm exec tsx --test packages/*/test/*.test.ts apps/*/test/*.test.ts',
+    'pnpm exec rush build && pnpm exec tsx --test packages/*/src/test/**/*.test.ts',
   );
 });
