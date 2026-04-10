@@ -88,6 +88,16 @@ export TELEGRAM_SILENT="0"
 - `Notification` - 重要通知时通知
 - `UserPromptSubmit` - 用户提问时通知
 
+### 通过本地 Marketplace 安装（推荐开发用）
+
+1. 确保以非 root 用户运行 claude CLI
+2. 在仓库根目录执行添加 marketplace：
+   ```bash
+   claude /plugin marketplace add /path/to/this/repo
+   ```
+3. 在 claude 的 `/plugin` 界面中找到并安装 "chime-io-notifier"（来自 "telnotify-dev"）
+4. 通过运行示例会话并检查 Telegram 消息或 `/plugin` 列表确认安装成功
+
 ## 构建目标
 
 - 所有源码使用 TypeScript
