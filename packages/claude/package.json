@@ -2,23 +2,54 @@
   "name": "@chime-io/plugin-claude",
   "version": "1.0.1",
   "type": "module",
+  "main": "./dist/notifier.js",
+  "types": "./dist/notifier.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/notifier.d.ts",
+      "default": "./dist/notifier.js"
+    },
+    "./notify-stop": {
+      "types": "./dist/notify-stop.d.ts",
+      "default": "./dist/notify-stop.js"
+    },
+    "./notify-permission": {
+      "types": "./dist/notify-permission.d.ts",
+      "default": "./dist/notify-permission.js"
+    },
+    "./notify-notification": {
+      "types": "./dist/notify-notification.d.ts",
+      "default": "./dist/notify-notification.js"
+    },
+    "./notify-question": {
+      "types": "./dist/notify-question.d.ts",
+      "default": "./dist/notify-question.js"
+    },
+    "./notify-tool-use": {
+      "types": "./dist/notify-tool-use.d.ts",
+      "default": "./dist/notify-tool-use.js"
+    },
+    "./notify-subagent": {
+      "types": "./dist/notify-subagent.d.ts",
+      "default": "./dist/notify-subagent.js"
+    }
+  },
   "dependencies": {
     "@chime-io/channel-telegram": "workspace:*",
     "@chime-io/core": "workspace:*"
   },
-  "publishConfig": {
-    "access": "public"
-  },
+  "publishConfig": { "access": "public" },
   "scripts": {
     "build": "tsup",
     "build:watch": "tsup --watch",
-    "test": "tsx --test src/test/notifier.test.ts",
-    "clean": "rm -rf dist tsconfig.check.tsbuildinfo",
-    "typecheck": "tsc --pretty false"
+    "test": "tsx --test src/test/**/*.test.ts",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit --pretty false"
   },
   "devDependencies": {
     "@types/node": "~25.5.2",
     "tsup": "~8.4.0",
-    "tsx": "~4.21.0"
+    "tsx": "~4.21.0",
+    "typescript": "^5.8.3"
   }
 }
