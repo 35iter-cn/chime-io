@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@chime-io/plugin-opencode",
+      "comment": "empty",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@chime-io/plugin-opencode"
+}

@@ -25,8 +25,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          registry-url: 'https://registry.npmjs.org'
+          node-version: 'lts/*'
 
       - name: Enable pnpm
         run: |
@@ -52,8 +51,11 @@ jobs:
       - name: Rebuild packages
         run: node common/scripts/install-run-rush.js rebuild
 
+      - name: Run tests
+        run: node common/scripts/install-run-rush.js test
+
       - name: Publish packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
-          node common/scripts/install-run-rush.js publish --publish --apply --target-branch main --include-all --version-policy individual --set-access-level public
+          node common/scripts/install-run-rush.js publish --publish --apply --target-branch main --set-access-level public

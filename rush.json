@@ -23,6 +23,12 @@
       "versionPolicyName": "individual"
     },
     {
+      "packageName": "@chime-io/plugin-claude",
+      "projectFolder": "packages/claude",
+      "shouldPublish": true,
+      "versionPolicyName": "individual"
+    },
+    {
       "packageName": "@chime-io/cli",
       "projectFolder": "apps/cli",
       "shouldPublish": true,

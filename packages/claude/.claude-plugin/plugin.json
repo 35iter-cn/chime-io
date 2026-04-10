@@ -1,0 +1,11 @@
+{
+  "name": "chime-io-notifier",
+  "version": "1.0.0",
+  "description": "Send notifications to Telegram when Claude Code sessions complete or need attention",
+  "author": {
+    "name": "chime-io",
+    "email": "noreply@chime-io.local"
+  },
+  "license": "MIT",
+  "minClaudeVersion": "1.0.0"
+}

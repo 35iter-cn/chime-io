@@ -1,0 +1,17 @@
+{
+  "name": "telnotify-dev",
+  "description": "Local marketplace for TelNotify Claude plugins",
+  "owner": {
+    "name": "TelNotify",
+    "email": "devnull@telnotify.local"
+  },
+  "plugins": [
+    {
+      "name": "chime-io-notifier",
+      "description": "Send notifications to Telegram when Claude Code sessions complete or need attention",
+      "version": "1.0.0",
+      "source": "./",
+      "author": { "name": "chime-io", "email": "noreply@chime-io.local" }
+    }
+  ]
+}

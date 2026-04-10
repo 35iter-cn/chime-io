@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@chime-io/plugin-claude",
+      "comment": "intro claude plugin",
+      "type": "patch"
+    }
+  ],
+  "packageName": "@chime-io/plugin-claude"
+}

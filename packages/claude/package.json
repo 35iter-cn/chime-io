@@ -1,26 +1,24 @@
 {
-  "name": "@chime-io/plugin-opencode",
-  "version": "1.0.4",
+  "name": "@chime-io/plugin-claude",
+  "version": "1.0.0",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "dependencies": {
-    "@chime-io/core": "workspace:*",
-    "@chime-io/channel-telegram": "workspace:*"
+    "@chime-io/channel-telegram": "workspace:*",
+    "@chime-io/core": "workspace:*"
   },
   "publishConfig": {
     "access": "public"
   },
-  "devDependencies": {
-    "@types/node": "~25.5.2",
-    "typescript": "^5.8.3",
-    "tsx": "~4.21.0"
-  },
   "scripts": {
     "build": "tsc -b",
     "build:watch": "tsc -b --watch --preserveWatchOutput",
-    "test": "tsx --test test/opencode.test.ts",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "typecheck": "tsc -b --pretty false"
+  },
+  "devDependencies": {
+    "@types/node": "~25.5.2",
+    "tsx": "~4.21.0"
   }
 }
