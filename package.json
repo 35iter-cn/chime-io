@@ -1,12 +1,19 @@
 {
   "name": "telnotify-workspace",
   "private": true,
-  "packageManager": "pnpm@10.6.0",
+  "packageManager": "pnpm@10.12.1",
   "scripts": {
-    "rush:install": "rush install",
-    "rush:update": "rush update",
-    "rush:build": "rush build",
-    "rush:test": "rush test",
-    "rush:change": "rush change"
+    "rush": "node common/scripts/install-run-rush.js",
+    "rush:install": "pnpm rush install",
+    "rush:update": "pnpm rush update",
+    "rush:build": "pnpm rush build",
+    "rush:rebuild": "pnpm rush rebuild",
+    "rush:test": "pnpm rush test",
+    "rush:typecheck": "pnpm rush typecheck",
+    "rush:change": "pnpm rush change",
+    "rush:change:verify": "pnpm rush change --verify",
+    "rush:publish:pack": "pnpm rush publish --pack",
+    "rush:publish": "pnpm rush publish --publish --apply --target-branch main --set-access-level public",
+    "rush:publish:prerelease": "pnpm rush publish --publish --tag beta --apply --set-access-level public"
   }
 }

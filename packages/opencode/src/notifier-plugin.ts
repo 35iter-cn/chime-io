@@ -56,7 +56,7 @@ export interface OpenCodeClient {
   app?: OpenCodeAppApi;
 }
 
-export interface Logger {
+export interface OpenCodeLogger {
   warn(message: string, extra?: Record<string, unknown>): Promise<void>;
 }
 
@@ -104,7 +104,7 @@ export interface OpenCodeNotifierPlugin {
 export interface CreateOpenCodeNotifierPluginOptions {
   client: OpenCodeClient;
   notifier: Notifier;
-  logger: Logger;
+  logger: OpenCodeLogger;
 }
 
 function getLifecycleLogFile(): string {

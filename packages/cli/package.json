@@ -1,0 +1,34 @@
+{
+  "name": "@chime-io/cli",
+  "version": "1.0.5",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "types": "./dist/index.d.cts",
+  "bin": {
+    "chime": "./dist/index.cjs"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.cts",
+      "default": "./dist/index.cjs"
+    }
+  },
+  "dependencies": {
+    "@chime-io/core": "workspace:*",
+    "@chime-io/channel-telegram": "workspace:*"
+  },
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "tsx --test src/test/**/*.test.ts",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit --pretty false"
+  },
+  "devDependencies": {
+    "@types/node": "~25.5.2",
+    "tsup": "~8.4.0",
+    "tsx": "~4.21.0",
+    "typescript": "^5.8.3"
+  }
+}

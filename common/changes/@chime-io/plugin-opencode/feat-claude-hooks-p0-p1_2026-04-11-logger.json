@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Integrate new structured logger from Core layer",
+      "type": "patch",
+      "packageName": "@chime-io/plugin-opencode"
+    }
+  ],
+  "packageName": "@chime-io/plugin-opencode",
+  "email": "rxh12352@gmail.com"
+}

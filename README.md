@@ -6,36 +6,37 @@ See README_RELEASE.md for release and publish instructions.
 
 ## Workspace
 
-- `packages/core`: 通知模型、renderer、notifier
-- `packages/telegram`: Telegram channel 和 HTTP transport
+- `packages/core`: 通知模型、renderer、notifier、logger
+- `packages/channel-telegram`: Telegram channel 和 HTTP transport
 - `packages/opencode`: OpenCode formatter 与插件入口
-- `packages/claude`: Claude Code formatter 与插件入口
-- `apps/cli`: `telme` CLI
+- `packages/claude`: Claude Code hooks 实现
+- `packages/cli`: `chime` CLI
 
 ## 开发命令
 
 ```bash
-node common/scripts/install-run-rush.js install
-pnpm build
-pnpm build:watch
-pnpm test
-pnpm typecheck
-pnpm release:dry-run
+pnpm rush:install
+pnpm rush:build
+pnpm rush:rebuild
+pnpm rush:test
+pnpm rush:typecheck
+pnpm rush:change:verify
+pnpm rush:publish:pack
 ```
 
-`build` 通过 Rush 调度，`test` 会先触发仓库级构建，然后再用 `tsx --test` 运行测试。`release:dry-run` 会走 `rush publish --pack`，用于本地验证发布产物而不真正发布。
+以上命令统一通过根 `package.json` 暴露的 `rush:*` 脚本调用 Rush。`rush:publish:pack` 会执行 `rush publish --pack`，用于本地验证发布产物而不真正发布。
 
 ## 运行 CLI
 
 ```bash
-pnpm --filter telme build
-pnpm --filter telme exec telme -t <token> -u <user_id> -m "Hello"
+pnpm --filter @chime-io/cli build
+pnpm --filter @chime-io/cli exec chime -t <token> -u <user_id> -m "Hello"
 ```
 
 也可以直接执行产物：
 
 ```bash
-node apps/cli/dist/index.js -t <token> -u <user_id> -m "Hello"
+node packages/cli/dist/index.cjs -t <token> -u <user_id> -m "Hello"
 ```
 
 ## OpenCode 插件入口
@@ -73,20 +74,26 @@ cp -r packages/claude ~/.claude/plugins/chime-io-notifier
 claude config set enabledPlugins '["chime-io-notifier"]'
 ```
 
-依赖环境变量（与 OpenCode 相同）：
+依赖环境变量：
 
 ```bash
 export TELEGRAM_BOT_TOKEN="your_bot_token"
 export TELEGRAM_USER_ID="your_user_id"
 export TELEGRAM_PARSE_MODE="HTML"
 export TELEGRAM_SILENT="0"
+export CLAUDE_NOTIFY_DETAIL_LEVEL="medium"
+export CLAUDE_NOTIFY_INCLUDE_STATS="true"
+export CLAUDE_NOTIFY_INCLUDE_GIT="true"
+export CLAUDE_NOTIFY_TOOL_FILTER="Bash|Edit"
 ```
 
 支持的事件钩子：
-- `Stop` - 会话完成时通知
+- `Stop` - 会话完成时通知（包含最后一条 Agent 消息）
+- `Error` - 会话报错时通知（包含错误详情）
 - `PermissionRequest` - 需要用户确认时通知
-- `Notification` - 重要通知时通知
 - `UserPromptSubmit` - 用户提问时通知
+
+消息内容包含：Agent 名称、会话标题、完整 sessionId、详细消息内容
 
 ### 通过本地 Marketplace 安装（推荐开发用）
 

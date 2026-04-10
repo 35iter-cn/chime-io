@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add structured logger module with rotation, timezone support and agent identification",
+      "type": "minor",
+      "packageName": "@chime-io/core"
+    }
+  ],
+  "packageName": "@chime-io/core",
+  "email": "rxh12352@gmail.com"
+}

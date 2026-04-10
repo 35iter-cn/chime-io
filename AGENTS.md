@@ -1,46 +1,51 @@
-# AGENTS.md — repo guide for OpenCode agents
+# AGENTS.md
 
-目标：为未来的 OpenCode / agent 会话提供短、可执行的指引，避免常见猜测和错误。
+## 先信可执行配置
+- 优先信 `package.json`、`rush.json`、`common/config/rush/`、CI workflow；如果文档与这些配置冲突，以可执行配置为准。
+- 例子：根仓库统一通过 `pnpm rush:*` 脚本暴露 Rush 命令；`packages/cli/package.json` 的 bin 是 `chime`，但部分源码和文档里仍可能残留 `telme`。
 
-仓库要点
-- 这是一个 pnpm + Rush TypeScript monorepo（见 `rush.json`、`pnpm-workspace.yaml` 与根 `package.json`）。
-- 主要包：packages/core、packages/telegram、packages/opencode；apps/cli 包含 CLI（telme）。
-- 源码目录为各包下的 src/，构建产物位于 dist/。
+## 仓库结构
+- 这是一个 pnpm + Rush monorepo，Node 版本要求是 `>=20 <25`。
+- 根 `package.json` 声明 `pnpm@10.12.1`，`rush.json` 与 CI workflow 统一使用 `pnpm@10.12.1`。
+- Rush 项目边界在 `rush.json`：`packages/core`、`packages/telegram`、`packages/opencode`、`packages/claude`、`packages/cli`。
+- 关键入口：`packages/opencode/src/index.ts`、`packages/claude/src/index.ts`、`packages/cli/src/index.ts`。
 
-常用命令（在仓库根目录执行）
-- 安装：`node common/scripts/install-run-rush.js install`
-- 全量构建：pnpm build
-- 增量/监听构建：pnpm build:watch
-- 运行测试：pnpm test
-- 类型检查：pnpm typecheck
-- 本地发布 dry-run：`pnpm release:dry-run`
+## 常用命令
+- 安装依赖：`pnpm rush:install`
+- 全量构建：`pnpm rush:build`
+- 全量重建：`pnpm rush:rebuild`
+- 全量测试：`pnpm rush:test`
+- 全量类型检查：`pnpm rush:typecheck`
+- 变更文件校验：`pnpm rush:change:verify`
+- 发布前 dry-run：`pnpm rush:publish:pack`
 
-单包命令示例
-- 构建单个包：pnpm --filter @chime-io/core build
-- 运行单个包测试（如果需要）：pnpm --filter @chime-io/core test
+## CI 实际校验顺序
+- PR workflow 先跑 `pnpm rush:change:verify`，再 `pnpm rush:install`、`pnpm rush:rebuild`、`pnpm rush:test`。
+- 改了可发布包却没补 change file，PR 会直接失败。
 
-构建与测试细节（可验证行为）
-- package.json 的 top-level `build` 脚本通过 `install-run-rush.js build` 调用 Rush。
-- package.json 的 top-level `test` 脚本会先执行 pnpm build（即先构建再跑测试）。
-- 每个包通过 `tsc -b` 构建，输出到各自的 dist/。
+## 创建PR前必做检查
+1. **执行 `pnpm rush:change:verify`** — 确保所有修改的包都有对应的 change file
+2. **如缺少 change file，运行 `pnpm rush change`** — 按提示选择变更类型（major/minor/patch）并填写描述
+3. **提交并推送生成的 change file** — 位于 `common/changes/` 目录下
+4. **再次验证** — 重新运行 `pnpm rush:change:verify` 确认通过
 
-重要约定与陷阱
-- 不要假设安装仍由 `pnpm install` 驱动：CI 与推荐本地流程都应使用 Rush install。
-- 不要假设 tests 直接运行 TS 源而不构建：仓库的 test 脚本显式先构建。
-- 每个包包含自己的 tsconfig/tsconfig.tsbuildinfo；构建产物和 tsbuildinfo 会出现在包目录，编辑时注意不要误提交这些文件。
+## 单包与定向验证
+- 单包构建/类型检查用真实包名过滤，例如：`pnpm --filter @chime-io/core build`、`pnpm --filter @chime-io/cli typecheck`。
+- 目前五个包都定义了 `test` 脚本，可按包执行，例如：`pnpm --filter @chime-io/plugin-opencode test`。
+- 如果只想跑某个测试文件，直接用 `pnpm exec tsx --test <path-to-test>`。
 
-编辑/提交建议
-- 提交前运行：pnpm build && pnpm test
-- 不要改动 dist/ 中的文件为源代码变更的一部分（dist/ 由构建产物生成）。
+## 测试与构建陷阱
+- **测试必须从源码导入**：测试文件应直接从源码导入（如 `../index.ts`），而不是从 `dist/` 导入。这确保测试的是最新源码，而非过期的构建产物。
+- **TypeScript 导入扩展名**：使用 `.ts` 扩展名导入 TypeScript 源码（需启用 `allowImportingTsExtensions` + `noEmit`）。这是 ESM 规范要求，也是区分源码和构建产物的清晰方式。
+- `rush test` 在 `common/config/rush/command-line.json` 里配置了 `ignoreMissingScript: true`，所以没有 `test` 脚本的项目会被静默跳过。
 
-快速定位参考
-- workspace config: pnpm-workspace.yaml
-- Rush config: rush.json / common/config/rush/
-- monorepo scripts: package.json (repo root)
-- README.md 与 README_RELEASE.md 包含运行、发布与 dry-run 示例
+## Monorepo 架构原则
+- **统一构建工具**：所有包使用相同的构建工具（tsup）和输出格式（CJS）。
+- **统一目录结构**：测试文件统一放在 `src/test/` 目录下，便于 TypeScript 编译器统一处理。
+- **清理 tsconfig**：移除 `rootDir` 和 `composite` 配置，简化项目引用管理。tsup 不依赖 TypeScript project references。
+- **Rush 命令配置**：自定义命令通过 `common/config/rush/command-line.json` 配置为 bulk 命令，而非使用 pnpm 递归执行。
 
-当遇到问题
-- 构建或测试失败时先运行 `node common/scripts/install-run-rush.js build --verbose` 查看更详细日志，然后复现单包构建以缩小范围：`pnpm --filter <pkg> build`。
-
-维护此文件
-- 如果你修改了仓库的工作流程（scripts、CI、或主要包边界），请同时更新本文件以保持 agent 指南一致。
+## 发布相关
+- `publish.yml` 在 push 到 `main` 时发布，提交信息包含 `[skip publish]` 会跳过。
+- `prerelease.yml` 只在提交信息包含 `[pre-release]` 时触发，并以 `beta.<timestamp>` 预发布。
+- `README_RELEASE.md` 说明了正式发布依赖 change files 和 `NPM_TOKEN`；推 tag 本身不会触发发布 GitHub Release 流程。

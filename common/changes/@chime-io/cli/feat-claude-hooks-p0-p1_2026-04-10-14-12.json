@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactor to tsup build with CJS output and standardized test structure",
+      "type": "minor",
+      "packageName": "@chime-io/cli"
+    }
+  ],
+  "packageName": "@chime-io/cli",
+  "email": "rxh12352@gmail.com"
+}
