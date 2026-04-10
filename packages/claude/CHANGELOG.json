@@ -1,0 +1,25 @@
+{
+  "name": "@chime-io/plugin-claude",
+  "entries": [
+    {
+      "version": "1.0.1",
+      "tag": "@chime-io/plugin-claude_v1.0.1",
+      "date": "Fri, 10 Apr 2026 02:39:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "intro claude plugin"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@chime-io/channel-telegram\" to `1.0.5`"
+          },
+          {
+            "comment": "Updating dependency \"@chime-io/core\" to `1.0.5`"
+          }
+        ]
+      }
+    }
+  ]
+}
