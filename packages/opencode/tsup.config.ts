@@ -1,7 +1,11 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: {
+    'index': 'src/index.ts',
+    'format': 'src/format.ts',
+    'notifier-plugin': 'src/notifier-plugin.ts',
+  },
   outDir: 'dist',
   format: 'cjs',
   target: 'node20',

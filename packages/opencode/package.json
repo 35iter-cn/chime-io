@@ -8,6 +8,14 @@
     ".": {
       "types": "./dist/index.d.cts",
       "default": "./dist/index.cjs"
+    },
+    "./format": {
+      "types": "./dist/format.d.cts",
+      "default": "./dist/format.cjs"
+    },
+    "./notifier-plugin": {
+      "types": "./dist/notifier-plugin.d.cts",
+      "default": "./dist/notifier-plugin.cjs"
     }
   },
   "dependencies": {
