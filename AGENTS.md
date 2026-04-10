@@ -26,8 +26,15 @@
 - 其他测试文件存在，但未接到 Rush `test` 命令上；需要手动跑 `pnpm exec tsx --test <path-to-test>`。
 
 ## 测试与构建陷阱
-- 多数测试直接从各包 `dist/` 导入，而各包 `tsconfig.json` 只包含 `src/**/*.ts`；先构建，再跑测试，否则容易因为 `dist` 缺失失败。
+- **测试必须从源码导入**：测试文件应直接从源码导入（如 `../index.ts`），而不是从 `dist/` 导入。这确保测试的是最新源码，而非过期的构建产物。
+- **TypeScript 导入扩展名**：使用 `.ts` 扩展名导入 TypeScript 源码（需启用 `allowImportingTsExtensions` + `noEmit`）。这是 ESM 规范要求，也是区分源码和构建产物的清晰方式。
 - `rush test` 在 `common/config/rush/command-line.json` 里配置了 `ignoreMissingScript: true`，所以没有 `test` 脚本的项目会被静默跳过。
+
+## Monorepo 架构原则
+- **统一构建工具**：所有包使用相同的构建工具（tsup）和输出格式（CJS）。
+- **统一目录结构**：测试文件统一放在 `src/test/` 目录下，便于 TypeScript 编译器统一处理。
+- **清理 tsconfig**：移除 `rootDir` 和 `composite` 配置，简化项目引用管理。tsup 不依赖 TypeScript project references。
+- **Rush 命令配置**：自定义命令通过 `common/config/rush/command-line.json` 配置为 bulk 命令，而非使用 pnpm 递归执行。
 
 ## 发布相关
 - `publish.yml` 在 push 到 `main` 时发布，提交信息包含 `[skip publish]` 会跳过。
