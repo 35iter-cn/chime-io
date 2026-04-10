@@ -4,23 +4,28 @@
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
   "dependencies": {
     "@chime-io/core": "workspace:*",
     "@chime-io/channel-telegram": "workspace:*"
   },
-  "publishConfig": {
-    "access": "public"
+  "publishConfig": { "access": "public" },
+  "scripts": {
+    "build": "tsup",
+    "build:watch": "tsup --watch",
+    "test": "tsx --test src/test/**/*.test.ts",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit --pretty false"
   },
   "devDependencies": {
     "@types/node": "~25.5.2",
-    "typescript": "^5.8.3",
-    "tsx": "~4.21.0"
-  },
-  "scripts": {
-    "build": "tsc -b",
-    "build:watch": "tsc -b --watch --preserveWatchOutput",
-    "test": "tsx --test test/opencode.test.ts",
-    "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "typecheck": "tsc -b --pretty false"
+    "tsup": "~8.4.0",
+    "tsx": "~4.21.0",
+    "typescript": "^5.8.3"
   }
 }
