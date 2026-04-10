@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactor to use Core layer interfaces, streamline to 4 hooks (stop, error, permission, question) with structured notifications",
+      "type": "minor",
+      "packageName": "@chime-io/plugin-claude"
+    }
+  ],
+  "packageName": "@chime-io/plugin-claude",
+  "email": "rxh12352@gmail.com"
+}

@@ -13,25 +13,17 @@
       "types": "./dist/notify-stop.d.cts",
       "default": "./dist/notify-stop.cjs"
     },
+    "./notify-error": {
+      "types": "./dist/notify-error.d.cts",
+      "default": "./dist/notify-error.cjs"
+    },
     "./notify-permission": {
       "types": "./dist/notify-permission.d.cts",
       "default": "./dist/notify-permission.cjs"
     },
-    "./notify-notification": {
-      "types": "./dist/notify-notification.d.cts",
-      "default": "./dist/notify-notification.cjs"
-    },
     "./notify-question": {
       "types": "./dist/notify-question.d.cts",
       "default": "./dist/notify-question.cjs"
-    },
-    "./notify-tool-use": {
-      "types": "./dist/notify-tool-use.d.cts",
-      "default": "./dist/notify-tool-use.cjs"
-    },
-    "./notify-subagent": {
-      "types": "./dist/notify-subagent.d.cts",
-      "default": "./dist/notify-subagent.cjs"
     }
   },
   "dependencies": {
