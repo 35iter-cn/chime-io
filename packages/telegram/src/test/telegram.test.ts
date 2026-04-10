@@ -3,7 +3,8 @@ import test from 'node:test';
 
 import { createNotification } from '@chime-io/core';
 
-import { createTelegramChannel } from '../../dist/index.cjs';
+import { createTelegramChannel } from '../channels/telegram.js';
+import type { JsonPost, JsonPostRequest } from '../transport/https.js';
 
 test('createTelegramChannel validates token and userId', () => {
   assert.throws(() => createTelegramChannel({ token: '', userId: '42' }), /Telegram bot token is required/);
@@ -11,17 +12,18 @@ test('createTelegramChannel validates token and userId', () => {
 });
 
 test('createTelegramChannel sends rendered payload', async () => {
-  const calls: Array<Record<string, unknown>> = [];
+  const calls: Array<JsonPostRequest> = [];
+  const mockPost = (async (request: JsonPostRequest) => {
+    calls.push(request);
+    return {
+      ok: true,
+      result: { message_id: 99 },
+    };
+  }) as JsonPost;
   const channel = createTelegramChannel({
     token: 'token',
     userId: '42',
-    post: async (request) => {
-      calls.push(request as Record<string, unknown>);
-      return {
-        ok: true,
-        result: { message_id: 99 },
-      };
-    },
+    post: mockPost,
   });
 
   const result = await channel.send(

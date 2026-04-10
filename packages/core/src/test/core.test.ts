@@ -5,7 +5,7 @@ import {
   createMessageRenderer,
   createNotification,
   createNotifier,
-} from '../../dist/index.cjs';
+} from '../index.js';
 
 test('createMessageRenderer renders title and body lines', () => {
   const render = createMessageRenderer();
