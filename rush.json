@@ -30,7 +30,7 @@
     },
     {
       "packageName": "@chime-io/cli",
-      "projectFolder": "apps/cli",
+      "projectFolder": "packages/cli",
       "shouldPublish": true,
       "versionPolicyName": "individual"
     }
