@@ -2,7 +2,6 @@
 
 import { createNotification } from '@chime-io/core';
 import { createTelegramChannel } from '@chime-io/channel-telegram';
-import { pathToFileURL } from 'node:url';
 
 export interface CliOptions {
   token: string | undefined;
@@ -147,10 +146,9 @@ export async function main(
   }
 }
 
-const entrypoint = process.argv[1]
-  ? pathToFileURL(process.argv[1]).href
-  : '';
+// Detect if this file is being run directly as an entry point
+const isEntryPoint = process.argv[1]?.includes('cli') || process.argv[1]?.includes('telme');
 
-if (import.meta.url === entrypoint) {
+if (isEntryPoint) {
   void main();
 }
