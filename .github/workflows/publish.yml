@@ -51,6 +51,9 @@ jobs:
       - name: Rebuild packages
         run: node common/scripts/install-run-rush.js rebuild
 
+      - name: Run tests
+        run: node common/scripts/install-run-rush.js test
+
       - name: Publish packages
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
