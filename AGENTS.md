@@ -23,6 +23,12 @@
 - PR workflow 先跑 `pnpm rush:change:verify`，再 `pnpm rush:install`、`pnpm rush:rebuild`、`pnpm rush:test`。
 - 改了可发布包却没补 change file，PR 会直接失败。
 
+## 创建PR前必做检查
+1. **执行 `pnpm rush:change:verify`** — 确保所有修改的包都有对应的 change file
+2. **如缺少 change file，运行 `pnpm rush change`** — 按提示选择变更类型（major/minor/patch）并填写描述
+3. **提交并推送生成的 change file** — 位于 `common/changes/` 目录下
+4. **再次验证** — 重新运行 `pnpm rush:change:verify` 确认通过
+
 ## 单包与定向验证
 - 单包构建/类型检查用真实包名过滤，例如：`pnpm --filter @chime-io/core build`、`pnpm --filter @chime-io/cli typecheck`。
 - 目前五个包都定义了 `test` 脚本，可按包执行，例如：`pnpm --filter @chime-io/plugin-opencode test`。
