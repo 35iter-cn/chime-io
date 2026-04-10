@@ -3,8 +3,8 @@ import test from 'node:test';
 
 import { createNotification } from '@chime-io/core';
 
-import { createTelegramChannel } from '../channels/telegram.js';
-import type { JsonPost, JsonPostRequest } from '../transport/https.js';
+import { createTelegramChannel } from '../channels/telegram.ts';
+import type { JsonPost, JsonPostRequest } from '../transport/https.ts';
 
 test('createTelegramChannel validates token and userId', () => {
   assert.throws(() => createTelegramChannel({ token: '', userId: '42' }), /Telegram bot token is required/);

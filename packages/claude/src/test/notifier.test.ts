@@ -12,7 +12,7 @@ import {
   shouldNotifyQuestion,
   shouldNotifySubagent,
   shouldNotifyToolFailure,
-} from "../notifier.js";
+} from "../notifier.ts";
 
 test("formatSessionCompleted includes model tokens and git branch", () => {
   process.env.CLAUDE_NOTIFY_DETAIL_LEVEL = "high";

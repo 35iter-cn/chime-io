@@ -5,7 +5,7 @@ import {
   createMessageRenderer,
   createNotification,
   createNotifier,
-} from '../index.js';
+} from '../index.ts';
 
 test('createMessageRenderer renders title and body lines', () => {
   const render = createMessageRenderer();

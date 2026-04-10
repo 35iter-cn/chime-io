@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { parseArgs } from '../index.js';
+import { parseArgs } from '../index.ts';
 
 test('parseArgs reads flags and env defaults', () => {
   const options = parseArgs(['-u', '42', '-m', 'Hello\\nWorld'], {

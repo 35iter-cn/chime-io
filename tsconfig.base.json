@@ -11,6 +11,8 @@
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
 
     "outDir": "./dist",
     "lib": ["ES2022"],
