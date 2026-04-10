@@ -2,6 +2,31 @@
   "name": "@chime-io/plugin-opencode",
   "entries": [
     {
+      "version": "1.1.0",
+      "tag": "@chime-io/plugin-opencode_v1.1.0",
+      "date": "Fri, 10 Apr 2026 22:11:22 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Refactor to tsup build with CJS output and standardized test structure"
+          }
+        ],
+        "patch": [
+          {
+            "comment": "Integrate new structured logger from Core layer"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@chime-io/core\" to `1.1.0`"
+          },
+          {
+            "comment": "Updating dependency \"@chime-io/channel-telegram\" to `1.1.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.0.5",
       "tag": "@chime-io/plugin-opencode_v1.0.5",
       "date": "Fri, 10 Apr 2026 02:39:54 GMT",
