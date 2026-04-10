@@ -1,29 +1,32 @@
 # AGENTS.md
 
 ## 先信可执行配置
-- 优先信 `package.json`、`rush.json`、`common/config/rush/`、CI workflow；当前 `README.md` 和 `packages/claude/README.md` 里的部分开发命令已过时。
-- 例子：根 `package.json` 只有 `rush:*` 脚本，没有 `pnpm build` / `pnpm test` / `pnpm typecheck`；`apps/cli/package.json` 的 bin 是 `chime`，但源码 help 文案仍写 `telme`。
+- 优先信 `package.json`、`rush.json`、`common/config/rush/`、CI workflow；如果文档与这些配置冲突，以可执行配置为准。
+- 例子：根仓库统一通过 `pnpm rush:*` 脚本暴露 Rush 命令；`packages/cli/package.json` 的 bin 是 `chime`，但部分源码和文档里仍可能残留 `telme`。
 
 ## 仓库结构
-- 这是 `pnpm@10.6.0` + Rush monorepo，Node 版本要求是 `>=20 <25`。
-- Rush 项目边界在 `rush.json`：`packages/core`、`packages/telegram`、`packages/opencode`、`packages/claude`、`apps/cli`。
-- 关键入口：`packages/opencode/src/index.ts`、`packages/claude/src/index.ts`、`apps/cli/src/index.ts`。
+- 这是一个 pnpm + Rush monorepo，Node 版本要求是 `>=20 <25`。
+- 根 `package.json` 当前声明 `pnpm@10.12.1`，`rush.json` / CI 当前固定 `pnpm@10.6.0`；处理版本差异时优先信实际执行环境。
+- Rush 项目边界在 `rush.json`：`packages/core`、`packages/telegram`、`packages/opencode`、`packages/claude`、`packages/cli`。
+- 关键入口：`packages/opencode/src/index.ts`、`packages/claude/src/index.ts`、`packages/cli/src/index.ts`。
 
 ## 常用命令
-- 安装依赖：`node common/scripts/install-run-rush.js install`
-- 全量构建：`node common/scripts/install-run-rush.js build` 或 `pnpm rush:build`
-- 全量测试：`node common/scripts/install-run-rush.js test` 或 `pnpm rush:test`
-- 变更文件校验：`node common/scripts/install-run-rush.js change --verify`
-- 发布前 dry-run：`node common/scripts/install-run-rush.js publish --pack`
+- 安装依赖：`pnpm rush:install`
+- 全量构建：`pnpm rush:build`
+- 全量重建：`pnpm rush:rebuild`
+- 全量测试：`pnpm rush:test`
+- 全量类型检查：`pnpm rush:typecheck`
+- 变更文件校验：`pnpm rush:change:verify`
+- 发布前 dry-run：`pnpm rush:publish:pack`
 
 ## CI 实际校验顺序
-- PR workflow 先跑 `change --verify`，再 `install`、`rebuild`、`test`。
+- PR workflow 先跑 `pnpm rush:change:verify`，再 `pnpm rush:install`、`pnpm rush:rebuild`、`pnpm rush:test`。
 - 改了可发布包却没补 change file，PR 会直接失败。
 
 ## 单包与定向验证
 - 单包构建/类型检查用真实包名过滤，例如：`pnpm --filter @chime-io/core build`、`pnpm --filter @chime-io/cli typecheck`。
-- 仓库里只有 `@chime-io/plugin-opencode` 定义了 `test` 脚本：`pnpm --filter @chime-io/plugin-opencode test`。
-- 其他测试文件存在，但未接到 Rush `test` 命令上；需要手动跑 `pnpm exec tsx --test <path-to-test>`。
+- 目前五个包都定义了 `test` 脚本，可按包执行，例如：`pnpm --filter @chime-io/plugin-opencode test`。
+- 如果只想跑某个测试文件，直接用 `pnpm exec tsx --test <path-to-test>`。
 
 ## 测试与构建陷阱
 - **测试必须从源码导入**：测试文件应直接从源码导入（如 `../index.ts`），而不是从 `dist/` 导入。这确保测试的是最新源码，而非过期的构建产物。

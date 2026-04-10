@@ -37,13 +37,13 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Verify change logs
-        run: node common/scripts/install-run-rush.js change --verify
+        run: pnpm rush:change:verify
 
       - name: Install dependencies
-        run: node common/scripts/install-run-rush.js install
+        run: pnpm rush:install
 
       - name: Rebuild packages
-        run: node common/scripts/install-run-rush.js rebuild
+        run: pnpm rush:rebuild
 
       - name: Run tests
-        run: node common/scripts/install-run-rush.js test
+        run: pnpm rush:test

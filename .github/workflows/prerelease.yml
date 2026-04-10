@@ -46,10 +46,10 @@ jobs:
             ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
-        run: node common/scripts/install-run-rush.js install
+        run: pnpm rush:install
 
       - name: Rebuild packages
-        run: node common/scripts/install-run-rush.js rebuild
+        run: pnpm rush:rebuild
 
       - name: Generate beta version
         id: beta
@@ -61,9 +61,4 @@ jobs:
       - name: Publish prerelease
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          node common/scripts/install-run-rush.js publish --publish \
-            --prerelease-name ${{ steps.beta.outputs.version }} \
-            --tag beta \
-            --apply \
-            --set-access-level public
+        run: pnpm rush:publish:prerelease -- --prerelease-name ${{ steps.beta.outputs.version }}

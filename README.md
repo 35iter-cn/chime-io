@@ -10,32 +10,33 @@ See README_RELEASE.md for release and publish instructions.
 - `packages/telegram`: Telegram channel 和 HTTP transport
 - `packages/opencode`: OpenCode formatter 与插件入口
 - `packages/claude`: Claude Code formatter 与插件入口
-- `apps/cli`: `telme` CLI
+- `packages/cli`: `chime` CLI
 
 ## 开发命令
 
 ```bash
-node common/scripts/install-run-rush.js install
-pnpm build
-pnpm build:watch
-pnpm test
-pnpm typecheck
-pnpm release:dry-run
+pnpm rush:install
+pnpm rush:build
+pnpm rush:rebuild
+pnpm rush:test
+pnpm rush:typecheck
+pnpm rush:change:verify
+pnpm rush:publish:pack
 ```
 
-`build` 通过 Rush 调度，`test` 会先触发仓库级构建，然后再用 `tsx --test` 运行测试。`release:dry-run` 会走 `rush publish --pack`，用于本地验证发布产物而不真正发布。
+以上命令统一通过根 `package.json` 暴露的 `rush:*` 脚本调用 Rush。`rush:publish:pack` 会执行 `rush publish --pack`，用于本地验证发布产物而不真正发布。
 
 ## 运行 CLI
 
 ```bash
-pnpm --filter telme build
-pnpm --filter telme exec telme -t <token> -u <user_id> -m "Hello"
+pnpm --filter @chime-io/cli build
+pnpm --filter @chime-io/cli exec chime -t <token> -u <user_id> -m "Hello"
 ```
 
 也可以直接执行产物：
 
 ```bash
-node apps/cli/dist/index.js -t <token> -u <user_id> -m "Hello"
+node packages/cli/dist/index.cjs -t <token> -u <user_id> -m "Hello"
 ```
 
 ## OpenCode 插件入口
