@@ -10,7 +10,7 @@ type WorkspacePackageJson = {
 
 test('workspace test script builds via Rush directly before running tests', () => {
   const packageJson = JSON.parse(
-    readFileSync(new URL('../../../package.json', import.meta.url), 'utf8'),
+    readFileSync(new URL('../../../../package.json', import.meta.url), 'utf8'),
   ) as WorkspacePackageJson;
 
   assert.equal(
