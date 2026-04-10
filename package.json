@@ -8,6 +8,7 @@
     "rush:update": "pnpm rush update",
     "rush:build": "pnpm rush build",
     "rush:test": "pnpm rush test",
+    "rush:typecheck": "pnpm rush typecheck",
     "rush:change": "pnpm rush change"
   }
 }
