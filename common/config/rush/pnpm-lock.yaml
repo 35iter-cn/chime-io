@@ -26,6 +26,15 @@ importers:
         specifier: ^5.8.3
         version: 5.9.3
 
+  ../../packages/claude:
+    dependencies:
+      '@chime-io/channel-telegram':
+        specifier: workspace:*
+        version: link:../telegram
+      '@chime-io/core':
+        specifier: workspace:*
+        version: link:../core
+
   ../../packages/core:
     devDependencies:
       '@types/node':
