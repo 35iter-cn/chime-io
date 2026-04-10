@@ -1,12 +1,13 @@
 {
   "name": "telnotify-workspace",
   "private": true,
-  "packageManager": "pnpm@10.6.0",
+  "packageManager": "pnpm@10.12.1",
   "scripts": {
-    "rush:install": "rush install",
-    "rush:update": "rush update",
-    "rush:build": "rush build",
-    "rush:test": "rush test",
-    "rush:change": "rush change"
+    "rush": "node common/scripts/install-run-rush.js",
+    "rush:install": "pnpm rush install",
+    "rush:update": "pnpm rush update",
+    "rush:build": "pnpm rush build",
+    "rush:test": "pnpm rush test",
+    "rush:change": "pnpm rush change"
   }
 }
