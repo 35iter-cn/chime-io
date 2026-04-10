@@ -7,8 +7,5 @@
     "email": "noreply@chime-io.local"
   },
   "license": "MIT",
-  "minClaudeVersion": "1.0.0",
-  "hooks": {
-    "configPath": "../hooks/hooks.json"
-  }
+  "minClaudeVersion": "1.0.0"
 }
