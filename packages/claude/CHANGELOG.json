@@ -2,6 +2,18 @@
   "name": "@chime-io/plugin-claude",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@chime-io/plugin-claude_v1.2.0",
+      "date": "Sat, 11 Apr 2026 07:59:59 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "优化 Claude 插件通知消息格式：修复 hooks 配置（移除无效 UserPromptSubmit，添加 StopFailure），更新消息格式（添加工作路径和分支信息），统一消息风格"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@chime-io/plugin-claude_v1.1.0",
       "date": "Fri, 10 Apr 2026 22:11:22 GMT",
