@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-stop.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-stop.cjs",
             "async": true
           }
         ]
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-permission.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-permission.cjs",
             "async": true
           }
         ]
@@ -31,7 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-notification.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notifier.cjs",
             "async": true
           }
         ]
@@ -43,47 +43,14 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-question.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-question.cjs",
             "async": true
           }
         ]
       }
     ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-tool-use.js",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-subagent.js",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-subagent.js",
-            "async": true
-          }
-        ]
-      }
-    ]
+    "PostToolUseFailure": [],
+    "SubagentStart": [],
+    "SubagentStop": []
   }
 }
