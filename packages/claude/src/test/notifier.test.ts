@@ -33,11 +33,13 @@ test("createSessionCompletedNotification includes required fields", () => {
   // 检查标题格式：Claude · 项目名
   assert.equal(notification.title, "Claude · telnotify");
 
-  // 检查 lines 包含关键信息（简洁格式）
+  // 检查 lines 包含关键信息（包含上下文）
   const lines = notification.lines.join("\n");
   assert.match(lines, /completed/);
   assert.match(lines, /claude-3-7-sonnet/);
   assert.match(lines, /10800 tokens/);
+  assert.match(lines, /📁 \/root\/code\/telnotify/);
+  assert.match(lines, /🌿 feat\/demo/);
   assert.match(lines, /This is the final message from the agent/);
 
   // 检查 metadata 包含完整的 sessionId
@@ -89,10 +91,12 @@ test("createSessionErrorNotification includes error details", () => {
   // 检查标题格式：Claude · 项目名
   assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含简洁错误信息
+  // 检查 lines 包含简洁错误信息和上下文
   const lines = notification.lines.join("\n");
-  assert.match(lines, /出错啦：/);
+  assert.match(lines, /❌ 出错啦：/);
   assert.match(lines, /Something went wrong during execution/);
+  assert.match(lines, /📁 \/root\/code\/myproject/);
+  assert.match(lines, /🌿 main/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "error-session-123");
@@ -107,7 +111,7 @@ test("createSessionErrorNotification handles unknown error", () => {
 
   assert.equal(notification.metadata.error, "Unknown error");
   const lines = notification.lines.join("\n");
-  assert.match(lines, /出错啦：Unknown error/);
+  assert.match(lines, /❌ 出错啦：Unknown error/);
 });
 
 test("shouldNotifyStop returns true for normal completions", () => {
@@ -182,6 +186,7 @@ test("createPermissionNotification includes required fields", () => {
     permission: { title: "Run command" },
     tool_name: "Bash",
     tool_input: { command: "ls -la", timeout: 60000 },
+    git_info: { branch: "develop" },
   });
 
   // 检查 Agent 名称
@@ -193,10 +198,12 @@ test("createPermissionNotification includes required fields", () => {
   // 检查标题格式
   assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含简洁权限信息
+  // 检查 lines 包含简洁权限信息和上下文
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Agent 需要你的确认：/);
+  assert.match(lines, /🔒 Agent 需要你的确认：/);
   assert.match(lines, /Execute Bash Command/);
+  assert.match(lines, /📁 \/root\/code\/myproject/);
+  assert.match(lines, /🌿 develop/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "perm-session-123");
@@ -212,7 +219,7 @@ test("createPermissionNotification handles minimal input", () => {
 
   assert.equal(notification.metadata.permissionTitle, "");
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Agent 需要你的确认/);
+  assert.match(lines, /🔒 Agent 需要你的确认/);
 });
 
 test("createQuestionNotification includes required fields", () => {
@@ -221,6 +228,7 @@ test("createQuestionNotification includes required fields", () => {
     cwd: "/root/code/awesome-app",
     prompt: "What would you like me to do next?",
     turn_count: 5,
+    git_info: { branch: "feature/test" },
   });
 
   // 检查 Agent 名称
@@ -232,10 +240,12 @@ test("createQuestionNotification includes required fields", () => {
   // 检查标题格式
   assert.equal(notification.title, "Claude · awesome-app");
 
-  // 检查 lines 包含简洁问题信息
+  // 检查 lines 包含简洁问题信息和上下文
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Agent 正在等你回答：/);
+  assert.match(lines, /💬 Agent 正在等你回答：/);
   assert.match(lines, /What would you like me to do next/);
+  assert.match(lines, /📁 \/root\/code\/awesome-app/);
+  assert.match(lines, /🌿 feature\/test/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "question-session-456");
@@ -249,7 +259,7 @@ test("createQuestionNotification handles message field", () => {
   });
 
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Agent 正在等你回答：/);
+  assert.match(lines, /💬 Agent 正在等你回答：/);
   assert.match(lines, /Please provide more details/);
 });
 
@@ -284,10 +294,12 @@ test("createToolFailureNotification includes required fields", () => {
   // 检查标题格式
   assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含简洁工具失败信息
+  // 检查 lines 包含简洁工具失败信息和上下文
   const lines = notification.lines.join("\n");
-  assert.match(lines, /工具 Bash 失败：/);
+  assert.match(lines, /🔧 工具 Bash 失败：/);
   assert.match(lines, /Command not found: invalid-command/);
+  assert.match(lines, /📁 \/root\/code\/myproject/);
+  assert.match(lines, /🌿 feature\/test/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "tool-fail-session-789");
@@ -306,7 +318,7 @@ test("createToolFailureNotification handles minimal input", () => {
   assert.equal(notification.metadata.error, "");
   assert.equal(notification.kind, "tool_failure");
   const lines = notification.lines.join("\n");
-  assert.match(lines, /工具执行失败/);
+  assert.match(lines, /❌ 工具执行失败/);
 });
 
 test("createToolFailureNotification handles tool_use field", () => {
@@ -318,10 +330,12 @@ test("createToolFailureNotification handles tool_use field", () => {
       input: { file_path: "/test/file.ts", old_string: "foo", new_string: "bar" },
     },
     result: { error: "File does not exist" },
+    git_info: { branch: "main" },
   });
 
   assert.equal(notification.metadata.toolName, "Edit");
   const lines = notification.lines.join("\n");
-  assert.match(lines, /工具 Edit 失败：/);
+  assert.match(lines, /🔧 工具 Edit 失败：/);
   assert.match(lines, /File does not exist/);
+  assert.match(lines, /🌿 main/);
 });

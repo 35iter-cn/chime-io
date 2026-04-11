@@ -105,6 +105,23 @@ function getShortSessionId(hookInput: HookInput): string {
 }
 
 /**
+ * 构建上下文信息（工作路径 + 分支）
+ */
+function buildContextInfo(hookInput: HookInput): string {
+  const parts: string[] = [];
+  
+  if (hookInput.cwd) {
+    parts.push(`📁 ${hookInput.cwd}`);
+  }
+  
+  if (hookInput.git_info?.branch) {
+    parts.push(`🌿 ${hookInput.git_info.branch}`);
+  }
+  
+  return parts.join(' · ');
+}
+
+/**
  * 检查是否应该通知 stop 事件
  */
 export function shouldNotifyStop(hookInput: HookInput): boolean {
@@ -113,7 +130,7 @@ export function shouldNotifyStop(hookInput: HookInput): boolean {
 
 /**
  * 创建会话完成的 Notification
- * 格式参考 OpenCode：简洁的标题 + 关键信息
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createSessionCompletedNotification(
   hookInput: HookInput,
@@ -132,6 +149,7 @@ export function createSessionCompletedNotification(
   if (totalTokens) parts.push(`${totalTokens} tokens`);
 
   const summary = parts.join(' · ');
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
@@ -139,6 +157,7 @@ export function createSessionCompletedNotification(
     title: `Claude · ${project || getShortSessionId(hookInput)}`,
     lines: [
       summary,
+      ...(contextInfo ? [contextInfo] : []),
       ...(lastMessage ? [truncateText(lastMessage)] : []),
     ],
     metadata: {
@@ -154,7 +173,7 @@ export function createSessionCompletedNotification(
 
 /**
  * 创建会话失败的 Notification
- * 格式参考 OpenCode：简洁显示错误
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createSessionErrorNotification(
   hookInput: HookInput,
@@ -162,12 +181,16 @@ export function createSessionErrorNotification(
   const sessionId = getSessionId(hookInput);
   const project = getSessionTitle(hookInput);
   const errorMessage = hookInput.error || 'Unknown error';
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
     kind: 'error',
     title: `Claude · ${project || getShortSessionId(hookInput)}`,
-    lines: [`出错啦：${truncateText(errorMessage)}`],
+    lines: [
+      `❌ 出错啦：${truncateText(errorMessage)}`,
+      ...(contextInfo ? [contextInfo] : []),
+    ],
     metadata: {
       sessionId,
       fullSessionId: sessionId,
@@ -179,7 +202,7 @@ export function createSessionErrorNotification(
 
 /**
  * 创建权限请求的 Notification
- * 格式参考 OpenCode：简洁显示权限请求
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createPermissionNotification(
   hookInput: HookInput,
@@ -187,6 +210,7 @@ export function createPermissionNotification(
   const sessionId = getSessionId(hookInput);
   const project = getSessionTitle(hookInput);
   const permissionTitle = hookInput.title || hookInput.permission?.title || '';
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
@@ -194,8 +218,9 @@ export function createPermissionNotification(
     title: `Claude · ${project || getShortSessionId(hookInput)}`,
     lines: [
       permissionTitle
-        ? `Agent 需要你的确认：${truncateText(permissionTitle)}`
-        : 'Agent 需要你的确认',
+        ? `🔒 Agent 需要你的确认：${truncateText(permissionTitle)}`
+        : '🔒 Agent 需要你的确认',
+      ...(contextInfo ? [contextInfo] : []),
     ],
     metadata: {
       sessionId,
@@ -208,7 +233,7 @@ export function createPermissionNotification(
 
 /**
  * 创建用户提问的 Notification
- * 格式参考 OpenCode：简洁显示问题
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createQuestionNotification(
   hookInput: HookInput,
@@ -216,6 +241,7 @@ export function createQuestionNotification(
   const sessionId = getSessionId(hookInput);
   const project = getSessionTitle(hookInput);
   const question = hookInput.prompt || hookInput.message || '';
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
@@ -223,8 +249,9 @@ export function createQuestionNotification(
     title: `Claude · ${project || getShortSessionId(hookInput)}`,
     lines: [
       question
-        ? `Agent 正在等你回答：${truncateText(question)}`
-        : 'Agent 正在等你回答',
+        ? `💬 Agent 正在等你回答：${truncateText(question)}`
+        : '💬 Agent 正在等你回答',
+      ...(contextInfo ? [contextInfo] : []),
     ],
     metadata: {
       sessionId,
@@ -256,7 +283,7 @@ export function createApproveResponse(): ApproveResponse {
 
 /**
  * 创建工具执行失败的 Notification
- * 格式参考 OpenCode：简洁显示错误
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createToolFailureNotification(
   hookInput: HookInput,
@@ -271,16 +298,21 @@ export function createToolFailureNotification(
     hookInput.error ||
     hookInput.result?.message ||
     '';
+  const contextInfo = buildContextInfo(hookInput);
 
   const lines: string[] = [];
   if (toolName && errorMessage) {
-    lines.push(`工具 ${toolName} 失败：${truncateText(errorMessage)}`);
+    lines.push(`🔧 工具 ${toolName} 失败：${truncateText(errorMessage)}`);
   } else if (toolName) {
-    lines.push(`工具 ${toolName} 执行失败`);
+    lines.push(`🔧 工具 ${toolName} 执行失败`);
   } else if (errorMessage) {
-    lines.push(`执行失败：${truncateText(errorMessage)}`);
+    lines.push(`❌ 执行失败：${truncateText(errorMessage)}`);
   } else {
-    lines.push('工具执行失败');
+    lines.push('❌ 工具执行失败');
+  }
+  
+  if (contextInfo) {
+    lines.push(contextInfo);
   }
 
   return createNotification({
