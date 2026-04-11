@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@chime-io/plugin-claude",
+      "comment": "优化 Claude 插件通知消息格式：修复 hooks 配置（移除无效 UserPromptSubmit，添加 StopFailure），更新消息格式（添加工作路径和分支信息），统一消息风格",
+      "type": "minor"
+    }
+  ],
+  "packageName": "@chime-io/plugin-claude"
+}
