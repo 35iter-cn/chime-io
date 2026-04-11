@@ -48,12 +48,12 @@ This plugin registers the following Claude Code hooks:
 | Hook | Description |
 |------|-------------|
 | `Stop` | Notifies when a Claude Code session stops/completes |
+| `StopFailure` | Notifies when a Claude Code session stops with failure |
 | `PermissionRequest` | Notifies when user permission is required |
-| `Notification` | Notifies for important notifications |
-| `UserPromptSubmit` | Notifies when user asks a question |
+| `UserPromptSubmit` | Notifies when user submits a prompt |
 | `PostToolUseFailure` | Notifies when a tool execution fails |
 | `SubagentStart` | Registered, but silent by default |
-| `SubagentStop` | Notifies for high-signal subagent summaries |
+| `SubagentStop` | Registered, but silent by default |
 
 ## Building
 
