@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Hook: Error - 会话错误通知
+ * Hook: StopFailure - 会话失败通知
  *
- * 触发时机：Claude Code 会话发生错误时
+ * 触发时机：Claude Code 会话停止失败时
  * 消息内容包含：
  *   - Agent 名称: claude
  *   - 会话标题（从项目目录名提取）
