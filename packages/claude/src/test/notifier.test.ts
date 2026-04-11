@@ -6,6 +6,7 @@ import {
   createSessionErrorNotification,
   createPermissionNotification,
   createQuestionNotification,
+  createToolFailureNotification,
   shouldNotifyStop,
   createApproveResponse,
 } from "../notifier.ts";
@@ -263,4 +264,66 @@ test("createQuestionNotification truncates long questions", () => {
   const lines = notification.lines.join("\n");
   assert.ok(lines.length < 1000);
   assert.match(lines, /\.\.\.$/);
+});
+
+test("createToolFailureNotification includes required fields", () => {
+  const notification = createToolFailureNotification({
+    session_id: "tool-fail-session-789",
+    cwd: "/root/code/myproject",
+    tool_name: "Bash",
+    tool_input: { command: "invalid-command", timeout: 60000 },
+    result: { error: "Command not found: invalid-command" },
+    git_info: { branch: "feature/test" },
+  });
+
+  // 检查 Agent 名称
+  assert.equal(notification.agent, "claude");
+
+  // 检查消息类型
+  assert.equal(notification.kind, "tool_failure");
+
+  // 检查会话标题
+  assert.equal(notification.title, "myproject");
+
+  // 检查 lines 包含工具失败信息
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /Tool Failed: Bash/);
+  assert.match(lines, /Command not found: invalid-command/);
+  assert.match(lines, /feature\/test/);
+  assert.match(lines, /invalid-command/);
+
+  // 检查 metadata
+  assert.equal(notification.metadata.sessionId, "tool-fail-session-789");
+  assert.equal(notification.metadata.fullSessionId, "tool-fail-session-789");
+  assert.equal(notification.metadata.toolName, "Bash");
+  assert.equal(notification.metadata.error, "Command not found: invalid-command");
+});
+
+test("createToolFailureNotification handles minimal input", () => {
+  const notification = createToolFailureNotification({
+    session_id: "test123",
+    cwd: "/project",
+  });
+
+  assert.equal(notification.metadata.toolName, "Unknown Tool");
+  assert.equal(notification.metadata.error, "Tool execution failed");
+  assert.equal(notification.kind, "tool_failure");
+});
+
+test("createToolFailureNotification handles tool_use field", () => {
+  const notification = createToolFailureNotification({
+    session_id: "test456",
+    cwd: "/work/app",
+    tool_use: {
+      name: "Edit",
+      input: { file_path: "/test/file.ts", old_string: "foo", new_string: "bar" },
+    },
+    result: { error: "File does not exist" },
+  });
+
+  assert.equal(notification.metadata.toolName, "Edit");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /Tool Failed: Edit/);
+  assert.match(lines, /File does not exist/);
+  assert.match(lines, /file_path/);
 });

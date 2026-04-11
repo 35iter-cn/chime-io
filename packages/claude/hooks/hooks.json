@@ -13,6 +13,18 @@
         ]
       }
     ],
+    "Error": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-error.cjs",
+            "async": true
+          }
+        ]
+      }
+    ],
     "PermissionRequest": [
       {
         "matcher": "*",
@@ -20,18 +32,6 @@
           {
             "type": "command",
             "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-permission.cjs",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notifier.cjs",
             "async": true
           }
         ]
@@ -49,7 +49,18 @@
         ]
       }
     ],
-    "PostToolUseFailure": [],
+    "PostToolUseFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-tool-failure.cjs",
+            "async": true
+          }
+        ]
+      }
+    ],
     "SubagentStart": [],
     "SubagentStop": []
   }

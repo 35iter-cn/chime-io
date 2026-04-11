@@ -33,6 +33,14 @@ interface HookInput {
   tool_input?: Record<string, unknown>;
   prompt?: string;
   turn_count?: number;
+  tool_use?: {
+    name?: string;
+    input?: Record<string, unknown>;
+  };
+  result?: {
+    error?: string;
+    message?: string;
+  };
 }
 
 /**
@@ -255,4 +263,48 @@ export function createApproveResponse(): ApproveResponse {
     reason: '',
     systemMessage: '',
   };
+}
+
+/**
+ * 创建工具执行失败的 Notification
+ * 包含：Agent名称、会话标题、完整sessionId、工具名称和错误详情
+ */
+export function createToolFailureNotification(
+  hookInput: HookInput,
+): Notification {
+  const sessionId = getSessionId(hookInput);
+  const title = getSessionTitle(hookInput);
+  const toolName = hookInput.tool_name ||
+    hookInput.tool ||
+    hookInput.tool_use?.name ||
+    'Unknown Tool';
+  const errorMessage = hookInput.result?.error ||
+    hookInput.error ||
+    hookInput.result?.message ||
+    'Tool execution failed';
+  const branch = hookInput.git_info?.branch;
+  const toolInput = hookInput.tool_input || hookInput.tool_use?.input;
+
+  const lines: string[] = [
+    `Tool Failed: ${toolName}`,
+    ...(branch ? [`Branch: ${branch}`] : []),
+    '',
+    'Error Details:',
+    truncateText(errorMessage, 800),
+    ...(toolInput ? ['', 'Tool Input:', truncateText(JSON.stringify(toolInput), 300)] : []),
+  ];
+
+  return createNotification({
+    agent: 'claude',
+    kind: 'tool_failure',
+    title: title || 'Claude Tool Failure',
+    lines,
+    metadata: {
+      sessionId,
+      fullSessionId: sessionId,
+      project: title,
+      toolName,
+      error: errorMessage,
+    },
+  });
 }
