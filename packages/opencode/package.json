@@ -1,6 +1,7 @@
 {
   "name": "@chime-io/plugin-opencode",
   "version": "1.1.0",
+  "description": "OpenCode plugin for mobile notifications - Telegram alerts for AI coding sessions",
   "type": "module",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.cts",
@@ -18,6 +19,28 @@
       "default": "./dist/notifier-plugin.cjs"
     }
   },
+  "keywords": [
+    "opencode",
+    "opencode-plugin",
+    "telegram",
+    "notification",
+    "ai-coding",
+    "developer-tools",
+    "mobile-notification",
+    "claude-code",
+    "plugin"
+  ],
+  "homepage": "https://github.com/yourusername/telnotify#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/telnotify.git",
+    "directory": "packages/opencode"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/telnotify/issues"
+  },
+  "author": "Chime IO Team",
+  "license": "MIT",
   "dependencies": {
     "@chime-io/core": "workspace:*",
     "@chime-io/channel-telegram": "workspace:*"

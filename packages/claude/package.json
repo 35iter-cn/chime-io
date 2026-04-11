@@ -1,6 +1,7 @@
 {
   "name": "@chime-io/plugin-claude",
   "version": "1.2.0",
+  "description": "Claude Code plugin for Telegram notifications - mobile alerts for AI coding sessions",
   "type": "module",
   "main": "./dist/notifier.cjs",
   "types": "./dist/notifier.d.cts",
@@ -30,6 +31,28 @@
       "default": "./dist/notify-tool-failure.cjs"
     }
   },
+  "keywords": [
+    "claude-code",
+    "claude",
+    "telegram",
+    "notification",
+    "ai-coding",
+    "developer-tools",
+    "mobile-notification",
+    "plugin",
+    "claude-plugin"
+  ],
+  "homepage": "https://github.com/yourusername/telnotify#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/telnotify.git",
+    "directory": "packages/claude"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/telnotify/issues"
+  },
+  "author": "Chime IO Team",
+  "license": "MIT",
   "dependencies": {
     "@chime-io/channel-telegram": "workspace:*",
     "@chime-io/core": "workspace:*"

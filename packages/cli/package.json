@@ -1,6 +1,7 @@
 {
   "name": "@chime-io/cli",
   "version": "1.1.0",
+  "description": "CLI tool for Claude Code notifications and Telegram alerts - developer notification tool for AI coding workflows",
   "type": "module",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.cts",
@@ -13,6 +14,29 @@
       "default": "./dist/index.cjs"
     }
   },
+  "keywords": [
+    "claude-code",
+    "telegram",
+    "notification",
+    "ai-coding",
+    "developer-tools",
+    "mobile-notification",
+    "cli",
+    "automation",
+    "ci-cd",
+    "alert"
+  ],
+  "homepage": "https://github.com/yourusername/telnotify#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/telnotify.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/telnotify/issues"
+  },
+  "author": "Chime IO Team",
+  "license": "MIT",
   "dependencies": {
     "@chime-io/core": "workspace:*",
     "@chime-io/channel-telegram": "workspace:*"

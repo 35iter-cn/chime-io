@@ -1,6 +1,7 @@
 {
   "name": "@chime-io/channel-telegram",
   "version": "1.1.0",
+  "description": "Telegram transport layer for Chime IO - send mobile notifications via Telegram Bot API",
   "type": "module",
   "main": "./dist/index.cjs",
   "types": "./dist/index.d.cts",
@@ -10,6 +11,28 @@
       "default": "./dist/index.cjs"
     }
   },
+  "keywords": [
+    "telegram",
+    "bot",
+    "notification",
+    "mobile",
+    "ai-coding",
+    "developer-tools",
+    "claude-code",
+    "transport",
+    "messaging"
+  ],
+  "homepage": "https://github.com/yourusername/telnotify#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/telnotify.git",
+    "directory": "packages/telegram"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/telnotify/issues"
+  },
+  "author": "Chime IO Team",
+  "license": "MIT",
   "dependencies": {
     "@chime-io/core": "workspace:*"
   },
