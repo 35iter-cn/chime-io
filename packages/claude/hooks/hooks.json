@@ -37,18 +37,6 @@
         ]
       }
     ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-question.cjs",
-            "async": true
-          }
-        ]
-      }
-    ],
     "PostToolUseFailure": [
       {
         "matcher": "*",

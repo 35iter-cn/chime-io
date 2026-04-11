@@ -30,15 +30,14 @@ test("createSessionCompletedNotification includes required fields", () => {
   // 检查消息类型
   assert.equal(notification.kind, "session_complete");
 
-  // 检查会话标题（从 cwd 提取）
-  assert.equal(notification.title, "telnotify");
+  // 检查标题格式：Claude · 项目名
+  assert.equal(notification.title, "Claude · telnotify");
 
-  // 检查 lines 包含关键信息
+  // 检查 lines 包含关键信息（简洁格式）
   const lines = notification.lines.join("\n");
   assert.match(lines, /completed/);
   assert.match(lines, /claude-3-7-sonnet/);
-  assert.match(lines, /10800/);
-  assert.match(lines, /feat\/demo/);
+  assert.match(lines, /10800 tokens/);
   assert.match(lines, /This is the final message from the agent/);
 
   // 检查 metadata 包含完整的 sessionId
@@ -53,7 +52,7 @@ test("createSessionCompletedNotification handles missing optional fields", () =>
   });
 
   assert.equal(notification.agent, "claude");
-  assert.equal(notification.title, "myproject");
+  assert.equal(notification.title, "Claude · myproject");
   assert.equal(notification.metadata.sessionId, "abc123");
 
   // 应该包含默认状态
@@ -87,14 +86,13 @@ test("createSessionErrorNotification includes error details", () => {
   // 检查消息类型
   assert.equal(notification.kind, "error");
 
-  // 检查会话标题（从 cwd 提取的项目名）
-  assert.equal(notification.title, "myproject");
+  // 检查标题格式：Claude · 项目名
+  assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含错误信息
+  // 检查 lines 包含简洁错误信息
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Error occurred during session/);
+  assert.match(lines, /出错啦：/);
   assert.match(lines, /Something went wrong during execution/);
-  assert.match(lines, /main/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "error-session-123");
@@ -108,6 +106,8 @@ test("createSessionErrorNotification handles unknown error", () => {
   });
 
   assert.equal(notification.metadata.error, "Unknown error");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /出错啦：Unknown error/);
 });
 
 test("shouldNotifyStop returns true for normal completions", () => {
@@ -190,20 +190,18 @@ test("createPermissionNotification includes required fields", () => {
   // 检查消息类型
   assert.equal(notification.kind, "permission");
 
-  // 检查会话标题
-  assert.equal(notification.title, "myproject");
+  // 检查标题格式
+  assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含权限信息
+  // 检查 lines 包含简洁权限信息
   const lines = notification.lines.join("\n");
+  assert.match(lines, /Agent 需要你的确认：/);
   assert.match(lines, /Execute Bash Command/);
-  assert.match(lines, /Bash/);
-  assert.match(lines, /ls -la/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "perm-session-123");
   assert.equal(notification.metadata.fullSessionId, "perm-session-123");
   assert.equal(notification.metadata.permissionTitle, "Execute Bash Command");
-  assert.equal(notification.metadata.toolName, "Bash");
 });
 
 test("createPermissionNotification handles minimal input", () => {
@@ -212,8 +210,9 @@ test("createPermissionNotification handles minimal input", () => {
     cwd: "/project",
   });
 
-  assert.equal(notification.metadata.permissionTitle, "Permission Required");
-  assert.equal(notification.metadata.toolName, "Unknown Tool");
+  assert.equal(notification.metadata.permissionTitle, "");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /Agent 需要你的确认/);
 });
 
 test("createQuestionNotification includes required fields", () => {
@@ -230,18 +229,17 @@ test("createQuestionNotification includes required fields", () => {
   // 检查消息类型
   assert.equal(notification.kind, "question");
 
-  // 检查会话标题
-  assert.equal(notification.title, "awesome-app");
+  // 检查标题格式
+  assert.equal(notification.title, "Claude · awesome-app");
 
-  // 检查 lines 包含问题信息
+  // 检查 lines 包含简洁问题信息
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Turn #5/);
+  assert.match(lines, /Agent 正在等你回答：/);
   assert.match(lines, /What would you like me to do next/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "question-session-456");
   assert.equal(notification.metadata.fullSessionId, "question-session-456");
-  assert.equal(notification.metadata.turnCount, 5);
 });
 
 test("createQuestionNotification handles message field", () => {
@@ -251,6 +249,7 @@ test("createQuestionNotification handles message field", () => {
   });
 
   const lines = notification.lines.join("\n");
+  assert.match(lines, /Agent 正在等你回答：/);
   assert.match(lines, /Please provide more details/);
 });
 
@@ -282,15 +281,13 @@ test("createToolFailureNotification includes required fields", () => {
   // 检查消息类型
   assert.equal(notification.kind, "tool_failure");
 
-  // 检查会话标题
-  assert.equal(notification.title, "myproject");
+  // 检查标题格式
+  assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含工具失败信息
+  // 检查 lines 包含简洁工具失败信息
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Tool Failed: Bash/);
+  assert.match(lines, /工具 Bash 失败：/);
   assert.match(lines, /Command not found: invalid-command/);
-  assert.match(lines, /feature\/test/);
-  assert.match(lines, /invalid-command/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "tool-fail-session-789");
@@ -305,9 +302,11 @@ test("createToolFailureNotification handles minimal input", () => {
     cwd: "/project",
   });
 
-  assert.equal(notification.metadata.toolName, "Unknown Tool");
-  assert.equal(notification.metadata.error, "Tool execution failed");
+  assert.equal(notification.metadata.toolName, "");
+  assert.equal(notification.metadata.error, "");
   assert.equal(notification.kind, "tool_failure");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /工具执行失败/);
 });
 
 test("createToolFailureNotification handles tool_use field", () => {
@@ -323,7 +322,6 @@ test("createToolFailureNotification handles tool_use field", () => {
 
   assert.equal(notification.metadata.toolName, "Edit");
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Tool Failed: Edit/);
+  assert.match(lines, /工具 Edit 失败：/);
   assert.match(lines, /File does not exist/);
-  assert.match(lines, /file_path/);
 });
