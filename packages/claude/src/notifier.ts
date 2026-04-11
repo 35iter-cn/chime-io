@@ -33,6 +33,14 @@ interface HookInput {
   tool_input?: Record<string, unknown>;
   prompt?: string;
   turn_count?: number;
+  tool_use?: {
+    name?: string;
+    input?: Record<string, unknown>;
+  };
+  result?: {
+    error?: string;
+    message?: string;
+  };
 }
 
 /**
@@ -59,7 +67,7 @@ export function createClaudeNotifier() {
 /**
  * 裁剪文本到指定长度
  */
-function truncateText(text: string, maxLength = 500): string {
+function truncateText(text: string, maxLength = 160): string {
   if (!text) return '';
   const normalized = text.replace(/\s+/g, ' ').trim();
   if (normalized.length <= maxLength) return normalized;
@@ -90,6 +98,30 @@ function getSessionId(hookInput: HookInput): string {
 }
 
 /**
+ * 获取短 session ID（前8位）
+ */
+function getShortSessionId(hookInput: HookInput): string {
+  return getSessionId(hookInput).slice(0, 8);
+}
+
+/**
+ * 构建上下文信息（工作路径 + 分支）
+ */
+function buildContextInfo(hookInput: HookInput): string {
+  const parts: string[] = [];
+  
+  if (hookInput.cwd) {
+    parts.push(`📁 ${hookInput.cwd}`);
+  }
+  
+  if (hookInput.git_info?.branch) {
+    parts.push(`🌿 ${hookInput.git_info.branch}`);
+  }
+  
+  return parts.join(' · ');
+}
+
+/**
  * 检查是否应该通知 stop 事件
  */
 export function shouldNotifyStop(hookInput: HookInput): boolean {
@@ -98,37 +130,40 @@ export function shouldNotifyStop(hookInput: HookInput): boolean {
 
 /**
  * 创建会话完成的 Notification
- * 包含：Agent名称、会话标题、完整sessionId、最后一条Agent消息
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createSessionCompletedNotification(
   hookInput: HookInput,
 ): Notification {
   const sessionId = getSessionId(hookInput);
-  const title = getSessionTitle(hookInput);
+  const project = getSessionTitle(hookInput);
   const reason = hookInput.reason || 'completed';
   const lastMessage = hookInput.last_assistant_message || '';
   const model = hookInput.stop_details?.model;
   const totalTokens = hookInput.stop_details?.total_tokens;
-  const branch = hookInput.git_info?.branch;
 
-  const lines: string[] = [
-    `Status: ${reason}`,
-    ...(model ? [`Model: ${model}`] : []),
-    ...(totalTokens ? [`Tokens: ${totalTokens}`] : []),
-    ...(branch ? [`Branch: ${branch}`] : []),
-    '',
-    ...(lastMessage ? ['Last Message:', truncateText(lastMessage, 500)] : ['No message']),
-  ];
+  // 构建状态摘要
+  const parts: string[] = [];
+  parts.push(reason);
+  if (model) parts.push(model);
+  if (totalTokens) parts.push(`${totalTokens} tokens`);
+
+  const summary = parts.join(' · ');
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
     kind: 'session_complete',
-    title: title || 'Claude Session',
-    lines,
+    title: `Claude · ${project || getShortSessionId(hookInput)}`,
+    lines: [
+      summary,
+      ...(contextInfo ? [contextInfo] : []),
+      ...(lastMessage ? [truncateText(lastMessage)] : []),
+    ],
     metadata: {
       sessionId,
       fullSessionId: sessionId,
-      project: title,
+      project,
       reason,
       model,
       totalTokens,
@@ -137,34 +172,29 @@ export function createSessionCompletedNotification(
 }
 
 /**
- * 创建会话错误的 Notification
- * 包含：Agent名称、会话标题、完整sessionId、错误内容
+ * 创建会话失败的 Notification
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createSessionErrorNotification(
   hookInput: HookInput,
 ): Notification {
   const sessionId = getSessionId(hookInput);
-  const title = getSessionTitle(hookInput);
+  const project = getSessionTitle(hookInput);
   const errorMessage = hookInput.error || 'Unknown error';
-  const branch = hookInput.git_info?.branch;
-
-  const lines: string[] = [
-    'Error occurred during session',
-    ...(branch ? [`Branch: ${branch}`] : []),
-    '',
-    'Error Details:',
-    truncateText(errorMessage, 800),
-  ];
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
     kind: 'error',
-    title: title || 'Claude Session Error',
-    lines,
+    title: `Claude · ${project || getShortSessionId(hookInput)}`,
+    lines: [
+      `❌ 出错啦：${truncateText(errorMessage)}`,
+      ...(contextInfo ? [contextInfo] : []),
+    ],
     metadata: {
       sessionId,
       fullSessionId: sessionId,
-      project: title,
+      project,
       error: errorMessage,
     },
   });
@@ -172,67 +202,61 @@ export function createSessionErrorNotification(
 
 /**
  * 创建权限请求的 Notification
- * 包含：Agent名称、会话标题、完整sessionId、权限请求详情
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createPermissionNotification(
   hookInput: HookInput,
 ): Notification {
   const sessionId = getSessionId(hookInput);
-  const title = getSessionTitle(hookInput);
-  const permissionTitle = hookInput.title || hookInput.permission?.title || 'Permission Required';
-  const toolName = hookInput.tool_name || hookInput.tool || 'Unknown Tool';
-  const toolInput = hookInput.tool_input
-    ? truncateText(JSON.stringify(hookInput.tool_input), 300)
-    : '';
-
-  const lines: string[] = [
-    `Permission: ${permissionTitle}`,
-    `Tool: ${toolName}`,
-    ...(toolInput ? [`Input: ${toolInput}`] : []),
-  ];
+  const project = getSessionTitle(hookInput);
+  const permissionTitle = hookInput.title || hookInput.permission?.title || '';
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
     kind: 'permission',
-    title: title || 'Claude Permission',
-    lines,
+    title: `Claude · ${project || getShortSessionId(hookInput)}`,
+    lines: [
+      permissionTitle
+        ? `🔒 Agent 需要你的确认：${truncateText(permissionTitle)}`
+        : '🔒 Agent 需要你的确认',
+      ...(contextInfo ? [contextInfo] : []),
+    ],
     metadata: {
       sessionId,
       fullSessionId: sessionId,
-      project: title,
+      project,
       permissionTitle,
-      toolName,
     },
   });
 }
 
 /**
  * 创建用户提问的 Notification
- * 包含：Agent名称、会话标题、完整sessionId、问题内容
+ * 格式：包含上下文信息（路径、分支）
  */
 export function createQuestionNotification(
   hookInput: HookInput,
 ): Notification {
   const sessionId = getSessionId(hookInput);
-  const title = getSessionTitle(hookInput);
-  const question = hookInput.prompt || hookInput.message || 'Waiting for input';
-  const turnCount = hookInput.turn_count;
-
-  const lines: string[] = [
-    ...(turnCount ? [`Turn #${turnCount}`] : []),
-    `Question: ${truncateText(question, 500)}`,
-  ];
+  const project = getSessionTitle(hookInput);
+  const question = hookInput.prompt || hookInput.message || '';
+  const contextInfo = buildContextInfo(hookInput);
 
   return createNotification({
     agent: 'claude',
     kind: 'question',
-    title: title || 'Claude Question',
-    lines,
+    title: `Claude · ${project || getShortSessionId(hookInput)}`,
+    lines: [
+      question
+        ? `💬 Agent 正在等你回答：${truncateText(question)}`
+        : '💬 Agent 正在等你回答',
+      ...(contextInfo ? [contextInfo] : []),
+    ],
     metadata: {
       sessionId,
       fullSessionId: sessionId,
-      project: title,
-      turnCount,
+      project,
     },
   });
 }
@@ -255,4 +279,53 @@ export function createApproveResponse(): ApproveResponse {
     reason: '',
     systemMessage: '',
   };
+}
+
+/**
+ * 创建工具执行失败的 Notification
+ * 格式：包含上下文信息（路径、分支）
+ */
+export function createToolFailureNotification(
+  hookInput: HookInput,
+): Notification {
+  const sessionId = getSessionId(hookInput);
+  const project = getSessionTitle(hookInput);
+  const toolName = hookInput.tool_name ||
+    hookInput.tool ||
+    hookInput.tool_use?.name ||
+    '';
+  const errorMessage = hookInput.result?.error ||
+    hookInput.error ||
+    hookInput.result?.message ||
+    '';
+  const contextInfo = buildContextInfo(hookInput);
+
+  const lines: string[] = [];
+  if (toolName && errorMessage) {
+    lines.push(`🔧 工具 ${toolName} 失败：${truncateText(errorMessage)}`);
+  } else if (toolName) {
+    lines.push(`🔧 工具 ${toolName} 执行失败`);
+  } else if (errorMessage) {
+    lines.push(`❌ 执行失败：${truncateText(errorMessage)}`);
+  } else {
+    lines.push('❌ 工具执行失败');
+  }
+  
+  if (contextInfo) {
+    lines.push(contextInfo);
+  }
+
+  return createNotification({
+    agent: 'claude',
+    kind: 'tool_failure',
+    title: `Claude · ${project || getShortSessionId(hookInput)}`,
+    lines,
+    metadata: {
+      sessionId,
+      fullSessionId: sessionId,
+      project,
+      toolName,
+      error: errorMessage,
+    },
+  });
 }

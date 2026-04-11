@@ -1,26 +1,37 @@
 #!/usr/bin/env node
 /**
- * Hook: StopFailure - 会话失败通知
+ * Hook: PostToolUseFailure - 工具执行失败通知
  *
- * 触发时机：Claude Code 会话停止失败时
+ * 触发时机：Claude Code 执行工具失败时
  * 消息内容包含：
  *   - Agent 名称: claude
  *   - 会话标题（从项目目录名提取）
  *   - 完整的 session ID
- *   - 错误详情
+ *   - 失败的工具名称和错误详情
  */
 
 import {
   createClaudeNotifier,
-  createSessionErrorNotification,
+  createToolFailureNotification,
   createApproveResponse,
 } from './notifier.js';
 
 interface HookInput {
-  error?: string;
   session_id?: string;
   sessionID?: string;
   cwd?: string;
+  tool_name?: string;
+  tool?: string;
+  tool_use?: {
+    name?: string;
+    input?: Record<string, unknown>;
+  };
+  tool_input?: Record<string, unknown>;
+  error?: string;
+  result?: {
+    error?: string;
+    message?: string;
+  };
   git_info?: {
     branch?: string;
   };
@@ -39,21 +50,15 @@ async function main() {
   try {
     const hookInput: HookInput = JSON.parse(input);
 
-    // 没有错误时不发送通知
-    if (!hookInput.error) {
-      console.log(JSON.stringify(createApproveResponse()));
-      return;
-    }
-
     // 创建 notifier 并发送通知
     const notifier = createClaudeNotifier();
-    const notification = createSessionErrorNotification(hookInput);
+    const notification = createToolFailureNotification(hookInput);
 
     await notifier.notify(notification);
 
     console.log(JSON.stringify(createApproveResponse()));
   } catch (error) {
-    console.error('Error in notify-error hook:', error);
+    console.error('Error in notify-tool-failure hook:', error);
     console.log(JSON.stringify(createApproveResponse()));
   }
 }

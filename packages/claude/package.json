@@ -24,6 +24,10 @@
     "./notify-question": {
       "types": "./dist/notify-question.d.cts",
       "default": "./dist/notify-question.cjs"
+    },
+    "./notify-tool-failure": {
+      "types": "./dist/notify-tool-failure.d.cts",
+      "default": "./dist/notify-tool-failure.cjs"
     }
   },
   "dependencies": {

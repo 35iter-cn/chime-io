@@ -55,9 +55,9 @@ flowchart TB
 
 **Claude Plugin 处理的事件类型**：
 - `session.stop` - 会话完成通知（`notify-stop`）
-- `session.error` - 会话错误通知（`notify-error`）
+- `session.stop_failure` - 会话失败通知（`notify-error`）
 - `permission.request` - 权限请求通知（`notify-permission`）
-- `question` - 用户提问通知（`notify-question`）
+- `tool.failure` - 工具执行失败通知（`notify-tool-failure`）
 
 **消息内容规范**（所有事件遵循统一格式）：
 - **Agent 名称**: `claude`

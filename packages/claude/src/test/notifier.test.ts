@@ -6,6 +6,7 @@ import {
   createSessionErrorNotification,
   createPermissionNotification,
   createQuestionNotification,
+  createToolFailureNotification,
   shouldNotifyStop,
   createApproveResponse,
 } from "../notifier.ts";
@@ -29,15 +30,16 @@ test("createSessionCompletedNotification includes required fields", () => {
   // 检查消息类型
   assert.equal(notification.kind, "session_complete");
 
-  // 检查会话标题（从 cwd 提取）
-  assert.equal(notification.title, "telnotify");
+  // 检查标题格式：Claude · 项目名
+  assert.equal(notification.title, "Claude · telnotify");
 
-  // 检查 lines 包含关键信息
+  // 检查 lines 包含关键信息（包含上下文）
   const lines = notification.lines.join("\n");
   assert.match(lines, /completed/);
   assert.match(lines, /claude-3-7-sonnet/);
-  assert.match(lines, /10800/);
-  assert.match(lines, /feat\/demo/);
+  assert.match(lines, /10800 tokens/);
+  assert.match(lines, /📁 \/root\/code\/telnotify/);
+  assert.match(lines, /🌿 feat\/demo/);
   assert.match(lines, /This is the final message from the agent/);
 
   // 检查 metadata 包含完整的 sessionId
@@ -52,7 +54,7 @@ test("createSessionCompletedNotification handles missing optional fields", () =>
   });
 
   assert.equal(notification.agent, "claude");
-  assert.equal(notification.title, "myproject");
+  assert.equal(notification.title, "Claude · myproject");
   assert.equal(notification.metadata.sessionId, "abc123");
 
   // 应该包含默认状态
@@ -86,14 +88,15 @@ test("createSessionErrorNotification includes error details", () => {
   // 检查消息类型
   assert.equal(notification.kind, "error");
 
-  // 检查会话标题（从 cwd 提取的项目名）
-  assert.equal(notification.title, "myproject");
+  // 检查标题格式：Claude · 项目名
+  assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含错误信息
+  // 检查 lines 包含简洁错误信息和上下文
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Error occurred during session/);
+  assert.match(lines, /❌ 出错啦：/);
   assert.match(lines, /Something went wrong during execution/);
-  assert.match(lines, /main/);
+  assert.match(lines, /📁 \/root\/code\/myproject/);
+  assert.match(lines, /🌿 main/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "error-session-123");
@@ -107,6 +110,8 @@ test("createSessionErrorNotification handles unknown error", () => {
   });
 
   assert.equal(notification.metadata.error, "Unknown error");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /❌ 出错啦：Unknown error/);
 });
 
 test("shouldNotifyStop returns true for normal completions", () => {
@@ -181,6 +186,7 @@ test("createPermissionNotification includes required fields", () => {
     permission: { title: "Run command" },
     tool_name: "Bash",
     tool_input: { command: "ls -la", timeout: 60000 },
+    git_info: { branch: "develop" },
   });
 
   // 检查 Agent 名称
@@ -189,20 +195,20 @@ test("createPermissionNotification includes required fields", () => {
   // 检查消息类型
   assert.equal(notification.kind, "permission");
 
-  // 检查会话标题
-  assert.equal(notification.title, "myproject");
+  // 检查标题格式
+  assert.equal(notification.title, "Claude · myproject");
 
-  // 检查 lines 包含权限信息
+  // 检查 lines 包含简洁权限信息和上下文
   const lines = notification.lines.join("\n");
+  assert.match(lines, /🔒 Agent 需要你的确认：/);
   assert.match(lines, /Execute Bash Command/);
-  assert.match(lines, /Bash/);
-  assert.match(lines, /ls -la/);
+  assert.match(lines, /📁 \/root\/code\/myproject/);
+  assert.match(lines, /🌿 develop/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "perm-session-123");
   assert.equal(notification.metadata.fullSessionId, "perm-session-123");
   assert.equal(notification.metadata.permissionTitle, "Execute Bash Command");
-  assert.equal(notification.metadata.toolName, "Bash");
 });
 
 test("createPermissionNotification handles minimal input", () => {
@@ -211,8 +217,9 @@ test("createPermissionNotification handles minimal input", () => {
     cwd: "/project",
   });
 
-  assert.equal(notification.metadata.permissionTitle, "Permission Required");
-  assert.equal(notification.metadata.toolName, "Unknown Tool");
+  assert.equal(notification.metadata.permissionTitle, "");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /🔒 Agent 需要你的确认/);
 });
 
 test("createQuestionNotification includes required fields", () => {
@@ -221,6 +228,7 @@ test("createQuestionNotification includes required fields", () => {
     cwd: "/root/code/awesome-app",
     prompt: "What would you like me to do next?",
     turn_count: 5,
+    git_info: { branch: "feature/test" },
   });
 
   // 检查 Agent 名称
@@ -229,18 +237,19 @@ test("createQuestionNotification includes required fields", () => {
   // 检查消息类型
   assert.equal(notification.kind, "question");
 
-  // 检查会话标题
-  assert.equal(notification.title, "awesome-app");
+  // 检查标题格式
+  assert.equal(notification.title, "Claude · awesome-app");
 
-  // 检查 lines 包含问题信息
+  // 检查 lines 包含简洁问题信息和上下文
   const lines = notification.lines.join("\n");
-  assert.match(lines, /Turn #5/);
+  assert.match(lines, /💬 Agent 正在等你回答：/);
   assert.match(lines, /What would you like me to do next/);
+  assert.match(lines, /📁 \/root\/code\/awesome-app/);
+  assert.match(lines, /🌿 feature\/test/);
 
   // 检查 metadata
   assert.equal(notification.metadata.sessionId, "question-session-456");
   assert.equal(notification.metadata.fullSessionId, "question-session-456");
-  assert.equal(notification.metadata.turnCount, 5);
 });
 
 test("createQuestionNotification handles message field", () => {
@@ -250,6 +259,7 @@ test("createQuestionNotification handles message field", () => {
   });
 
   const lines = notification.lines.join("\n");
+  assert.match(lines, /💬 Agent 正在等你回答：/);
   assert.match(lines, /Please provide more details/);
 });
 
@@ -263,4 +273,69 @@ test("createQuestionNotification truncates long questions", () => {
   const lines = notification.lines.join("\n");
   assert.ok(lines.length < 1000);
   assert.match(lines, /\.\.\.$/);
+});
+
+test("createToolFailureNotification includes required fields", () => {
+  const notification = createToolFailureNotification({
+    session_id: "tool-fail-session-789",
+    cwd: "/root/code/myproject",
+    tool_name: "Bash",
+    tool_input: { command: "invalid-command", timeout: 60000 },
+    result: { error: "Command not found: invalid-command" },
+    git_info: { branch: "feature/test" },
+  });
+
+  // 检查 Agent 名称
+  assert.equal(notification.agent, "claude");
+
+  // 检查消息类型
+  assert.equal(notification.kind, "tool_failure");
+
+  // 检查标题格式
+  assert.equal(notification.title, "Claude · myproject");
+
+  // 检查 lines 包含简洁工具失败信息和上下文
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /🔧 工具 Bash 失败：/);
+  assert.match(lines, /Command not found: invalid-command/);
+  assert.match(lines, /📁 \/root\/code\/myproject/);
+  assert.match(lines, /🌿 feature\/test/);
+
+  // 检查 metadata
+  assert.equal(notification.metadata.sessionId, "tool-fail-session-789");
+  assert.equal(notification.metadata.fullSessionId, "tool-fail-session-789");
+  assert.equal(notification.metadata.toolName, "Bash");
+  assert.equal(notification.metadata.error, "Command not found: invalid-command");
+});
+
+test("createToolFailureNotification handles minimal input", () => {
+  const notification = createToolFailureNotification({
+    session_id: "test123",
+    cwd: "/project",
+  });
+
+  assert.equal(notification.metadata.toolName, "");
+  assert.equal(notification.metadata.error, "");
+  assert.equal(notification.kind, "tool_failure");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /❌ 工具执行失败/);
+});
+
+test("createToolFailureNotification handles tool_use field", () => {
+  const notification = createToolFailureNotification({
+    session_id: "test456",
+    cwd: "/work/app",
+    tool_use: {
+      name: "Edit",
+      input: { file_path: "/test/file.ts", old_string: "foo", new_string: "bar" },
+    },
+    result: { error: "File does not exist" },
+    git_info: { branch: "main" },
+  });
+
+  assert.equal(notification.metadata.toolName, "Edit");
+  const lines = notification.lines.join("\n");
+  assert.match(lines, /🔧 工具 Edit 失败：/);
+  assert.match(lines, /File does not exist/);
+  assert.match(lines, /🌿 main/);
 });

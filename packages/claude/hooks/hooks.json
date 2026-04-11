@@ -7,7 +7,19 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-stop.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-stop.cjs",
+            "async": true
+          }
+        ]
+      }
+    ],
+    "StopFailure": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-error.cjs",
             "async": true
           }
         ]
@@ -19,31 +31,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-permission.js",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "Notification": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-notification.js",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "UserPromptSubmit": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-question.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-permission.cjs",
             "async": true
           }
         ]
@@ -55,35 +43,13 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-tool-use.js",
+            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-tool-failure.cjs",
             "async": true
           }
         ]
       }
     ],
-    "SubagentStart": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-subagent.js",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStop": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-subagent.js",
-            "async": true
-          }
-        ]
-      }
-    ]
+    "SubagentStart": [],
+    "SubagentStop": []
   }
 }

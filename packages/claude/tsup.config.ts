@@ -6,6 +6,7 @@ export default defineConfig({
     'notify-error': 'src/notify-error.ts',
     'notify-permission': 'src/notify-permission.ts',
     'notify-question': 'src/notify-question.ts',
+    'notify-tool-failure': 'src/notify-tool-failure.ts',
     'notifier': 'src/notifier.ts',
   },
   outDir: 'dist',
