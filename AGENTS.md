@@ -49,3 +49,6 @@
 - `publish.yml` 在 push 到 `main` 时发布，提交信息包含 `[skip publish]` 会跳过。
 - `prerelease.yml` 只在提交信息包含 `[pre-release]` 时触发，并以 `beta.<timestamp>` 预发布。
 - `README_RELEASE.md` 说明了正式发布依赖 change files 和 `NPM_TOKEN`；推 tag 本身不会触发发布 GitHub Release 流程。
+
+## 技术参考
+- [Claude Code Hooks 参考文档](./docs/claude-hooks-reference.md) - 记录 Claude Code hooks 有效名称、输入字段、本项目实现细节
