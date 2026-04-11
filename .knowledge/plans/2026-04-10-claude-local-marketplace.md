@@ -158,7 +158,7 @@ chmod +x packages/claude/hooks/*.js
 
 ---
 
-计划已保存于 `docs/superpowers/plans/2026-04-10-claude-local-marketplace.md`。
+计划已保存于 `.knowledge/plans/2026-04-10-claude-local-marketplace.md`。
 
 执行选项：
 1. Subagent-Driven（推荐）— 为每个任务派生子代理逐一执行并复审。

@@ -73,7 +73,7 @@
   - [ ] Topics: claude-code, opencode, telegram-bot, ai-notification, developer-tools
   - [ ] Description 填写
 - [ ] 检查 npm 包是否已发布（确认 SEO 信息已同步）
-- [ ] 创建 `docs/images/` 目录（用于后续截图）
+- [ ] 创建 `.knowledge/docs/images/` 目录（用于后续截图）
 
 #### Day 3: Show HN 发布
 - [ ] 发布 Show HN 帖子（美国时间周二上午 9-11 PT）

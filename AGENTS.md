@@ -51,4 +51,4 @@
 - `README_RELEASE.md` 说明了正式发布依赖 change files 和 `NPM_TOKEN`；推 tag 本身不会触发发布 GitHub Release 流程。
 
 ## 技术参考
-- [Claude Code Hooks 参考文档](./docs/claude-hooks-reference.md) - 记录 Claude Code hooks 有效名称、输入字段、本项目实现细节
+- [Claude Code Hooks 参考文档](./.knowledge/claude-hooks-reference.md) - 记录 Claude Code hooks 有效名称、输入字段、本项目实现细节

@@ -5,9 +5,9 @@
 </p>
 
 <!-- Hero Image 占位 - 推荐：1200x600px 展示 Telegram 通知预览，背景为代码编辑器 -->
-<p align="center">
-  <img src="docs/images/hero-banner.svg" alt="Chime IO - AI 编码通知工具" width="800">
-</p>
+<!-- <p align="center">
+  <img src=".knowledge/docs/images/hero-banner.svg" alt="Chime IO - AI 编码通知工具" width="800">
+</p> -->
 
 <p align="center">
   <strong>当 Claude Code 完成任务、报错或需要您关注时，立即获得手机通知。</strong><br>
