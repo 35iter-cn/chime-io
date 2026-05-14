@@ -93,9 +93,6 @@ This plugin registers the following Claude Code hooks:
 | `Stop` | ✅ Session complete | Notifies when Claude finishes successfully |
 | `StopFailure` | ❌ Session failed | Notifies on errors and failures |
 | `PermissionRequest` | ⚡ Needs approval | Alerts when user action required |
-| `PostToolUseFailure` | 🔧 Tool failed | Notifies when tool execution fails |
-| `SubagentStart` | 🤖 Subagent start | Registered, silent by default |
-| `SubagentStop` | ✅ Subagent done | Registered, silent by default |
 
 ---
 
@@ -165,8 +162,7 @@ packages/claude/
 │   │   ├── notify-stop.ts       # Stop event handler
 │   │   ├── notify-error.ts      # Error event handler
 │   │   ├── notify-permission.ts # Permission request handler
-│   │   ├── notify-question.ts   # User question handler
-│   │   └── notify-tool-failure.ts # Tool failure handler
+│   │   └── notify-question.ts   # User question handler (inactive)
 │   ├── test/
 │   │   └── *.test.ts           # Test files
 │   └── index.ts                # Plugin entry
