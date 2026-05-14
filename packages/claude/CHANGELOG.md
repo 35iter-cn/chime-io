@@ -1,6 +1,13 @@
 # Change Log - @chime-io/plugin-claude
 
-This log was last generated on Sat, 11 Apr 2026 07:59:59 GMT and should not be manually modified.
+This log was last generated on Thu, 14 May 2026 03:48:54 GMT and should not be manually modified.
+
+## 1.2.1
+Thu, 14 May 2026 03:48:54 GMT
+
+### Patches
+
+- 清理 hooks 配置：移除 PostToolUseFailure、SubagentStart、SubagentStop
 
 ## 1.2.0
 Sat, 11 Apr 2026 07:59:59 GMT

@@ -1,6 +1,13 @@
 # Change Log - @chime-io/cli
 
-This log was last generated on Fri, 10 Apr 2026 22:11:22 GMT and should not be manually modified.
+This log was last generated on Thu, 14 May 2026 03:48:54 GMT and should not be manually modified.
+
+## 1.1.1
+Thu, 14 May 2026 03:48:54 GMT
+
+### Patches
+
+- 修复重复 shebang 导致的 SyntaxError
 
 ## 1.1.0
 Fri, 10 Apr 2026 22:11:22 GMT

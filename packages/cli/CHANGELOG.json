@@ -2,6 +2,18 @@
   "name": "@chime-io/cli",
   "entries": [
     {
+      "version": "1.1.1",
+      "tag": "@chime-io/cli_v1.1.1",
+      "date": "Thu, 14 May 2026 03:48:54 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "修复重复 shebang 导致的 SyntaxError"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@chime-io/cli_v1.1.0",
       "date": "Fri, 10 Apr 2026 22:11:22 GMT",
