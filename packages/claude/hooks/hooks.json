@@ -36,20 +36,6 @@
           }
         ]
       }
-    ],
-    "PostToolUseFailure": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "node ${CLAUDE_PLUGIN_ROOT}/dist/notify-tool-failure.cjs",
-            "async": true
-          }
-        ]
-      }
-    ],
-    "SubagentStart": [],
-    "SubagentStop": []
+    ]
   }
 }
