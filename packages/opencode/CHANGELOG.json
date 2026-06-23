@@ -2,6 +2,18 @@
   "name": "@chime-io/plugin-opencode",
   "entries": [
     {
+      "version": "1.1.1",
+      "tag": "@chime-io/plugin-opencode_v1.1.1",
+      "date": "Tue, 23 Jun 2026 10:12:04 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Defensively validate sessionID prefix before calling OpenCode session APIs"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@chime-io/plugin-opencode_v1.1.0",
       "date": "Fri, 10 Apr 2026 22:11:22 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @chime-io/plugin-opencode
 
-This log was last generated on Fri, 10 Apr 2026 22:11:22 GMT and should not be manually modified.
+This log was last generated on Tue, 23 Jun 2026 10:12:04 GMT and should not be manually modified.
+
+## 1.1.1
+Tue, 23 Jun 2026 10:12:04 GMT
+
+### Patches
+
+- Defensively validate sessionID prefix before calling OpenCode session APIs
 
 ## 1.1.0
 Fri, 10 Apr 2026 22:11:22 GMT
