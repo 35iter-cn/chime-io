@@ -101,7 +101,7 @@ test("createOpenCodeNotifierPlugin writes lifecycle log to file", async () => {
     event: {
       type: "session.status",
       properties: {
-        sessionID: "root-session",
+        sessionID: "ses_root-session",
         status: { type: "busy" },
       },
     },
@@ -113,4 +113,98 @@ test("createOpenCodeNotifierPlugin writes lifecycle log to file", async () => {
 
   delete process.env.TELME_LOG_FILE;
   await fs.unlink(logFile);
+});
+
+test("createOpenCodeNotifierPlugin skips notification for invalid sessionID", async () => {
+  const warnings: Array<{ message: string; extra?: Record<string, unknown> }> = [];
+  const clientGetCalls: string[] = [];
+  const notifyCalls: unknown[] = [];
+
+  const plugin = createOpenCodeNotifierPlugin({
+    client: {
+      session: {
+        get: async ({ sessionID }: { sessionID: string }) => {
+          clientGetCalls.push(sessionID);
+          return { data: { id: sessionID, title: "demo-session", parentID: null } };
+        },
+        messages: async () => ({ data: [] }),
+      },
+    },
+    notifier: {
+      notify: async (notification) => {
+        notifyCalls.push(notification);
+      },
+    },
+    logger: {
+      warn: async (message, extra) => {
+        warnings.push({ message, ...(extra ? { extra } : {}) });
+      },
+    },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.idle",
+      properties: {
+        sessionID: "xHLOinvalid",
+      },
+    },
+  });
+
+  assert.equal(
+    clientGetCalls.length,
+    0,
+    "should not call client.session.get for an invalid sessionID",
+  );
+  assert.equal(
+    notifyCalls.length,
+    0,
+    "should not send notification for an invalid sessionID",
+  );
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0]!.message, /invalid sessionID/i);
+  assert.equal(warnings[0]!.extra?.sessionId, "xHLOinvalid");
+});
+
+test("createOpenCodeNotifierPlugin skips question notification for invalid sessionID", async () => {
+  const warnings: Array<{ message: string; extra?: Record<string, unknown> }> = [];
+  const clientGetCalls: string[] = [];
+  const notifyCalls: unknown[] = [];
+
+  const plugin = createOpenCodeNotifierPlugin({
+    client: {
+      session: {
+        get: async ({ sessionID }: { sessionID: string }) => {
+          clientGetCalls.push(sessionID);
+          return { data: { id: sessionID, title: "demo-session", parentID: null } };
+        },
+        messages: async () => ({ data: [] }),
+      },
+    },
+    notifier: {
+      notify: async (notification) => {
+        notifyCalls.push(notification);
+      },
+    },
+    logger: {
+      warn: async (message, extra) => {
+        warnings.push({ message, ...(extra ? { extra } : {}) });
+      },
+    },
+  });
+
+  await plugin["tool.execute.before"](
+    {
+      tool: "question",
+      sessionID: "not-a-session",
+      callID: "call-1",
+    },
+    { args: { questions: [{ question: "hello?" }] } },
+  );
+
+  assert.equal(clientGetCalls.length, 0);
+  assert.equal(notifyCalls.length, 0);
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0]!.message, /invalid sessionID/i);
+  assert.equal(warnings[0]!.extra?.sessionId, "not-a-session");
 });
