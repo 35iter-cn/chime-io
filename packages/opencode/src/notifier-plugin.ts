@@ -138,6 +138,12 @@ function getQuestionText(args: ToolExecuteOutput['args']): string {
   return typeof questionText === 'string' ? questionText : '';
 }
 
+const SESSION_ID_PREFIX = 'ses';
+
+function isValidSessionId(value: unknown): value is string {
+  return typeof value === 'string' && value.startsWith(SESSION_ID_PREFIX);
+}
+
 export function createOpenCodeNotifierPlugin({
   client,
   notifier,
@@ -153,6 +159,10 @@ export function createOpenCodeNotifierPlugin({
 
   const formatter = createOpenCodeEventFormatter({
     listMessages: async (sessionId) => {
+      if (!isValidSessionId(sessionId)) {
+        await logger.warn('Invalid sessionID, skipping message load', { sessionId });
+        return [];
+      }
       if (!client.session?.messages) return [];
 
       const attempts: Array<() => Promise<SessionMessagesResult | OpenCodeConversationMessage[]>> = [
@@ -182,6 +192,10 @@ export function createOpenCodeNotifierPlugin({
   });
 
   async function getSessionInfo(sessionId: string): Promise<OpenCodeSession> {
+    if (!isValidSessionId(sessionId)) {
+      throw new Error(`Invalid sessionID: ${String(sessionId)}`);
+    }
+
     const cached = sessionCache.get(sessionId);
     if (cached) return cached;
 
@@ -335,6 +349,13 @@ export function createOpenCodeNotifierPlugin({
       });
       if (!input.tool || !QUESTION_TOOLS.has(input.tool)) return;
       if (!input.sessionID || !input.callID) return;
+      if (!isValidSessionId(input.sessionID)) {
+        await logger.warn('Invalid sessionID, skipping notification', {
+          sessionId: input.sessionID,
+          tool: input.tool,
+        });
+        return;
+      }
 
       await notifyQuestion(
         input.sessionID,
@@ -357,9 +378,16 @@ export function createOpenCodeNotifierPlugin({
         sessionId: event.properties?.sessionID,
       });
 
+      async function warnInvalidSessionId(sessionId: unknown): Promise<void> {
+        await logger.warn('Invalid sessionID, skipping notification', {
+          sessionId,
+          eventType: event.type,
+        });
+      }
+
       if (event.type === 'session.created' || event.type === 'session.updated') {
         const info = event.properties?.info;
-        if (info?.id) {
+        if (info?.id && isValidSessionId(info.id)) {
           sessionCache.set(info.id, info);
         }
         return;
@@ -367,7 +395,7 @@ export function createOpenCodeNotifierPlugin({
 
       if (event.type === 'session.deleted') {
         const sessionId = event.properties?.info?.id;
-        if (sessionId) {
+        if (sessionId && isValidSessionId(sessionId)) {
           clearSessionNotificationState(sessionId);
         }
         return;
@@ -376,7 +404,10 @@ export function createOpenCodeNotifierPlugin({
       if (event.type === 'permission.updated' || event.type === 'permission.asked') {
         const permissionId = event.properties?.id;
         const sessionId = event.properties?.sessionID;
-        if (!permissionId || !sessionId) return;
+        if (!permissionId || !isValidSessionId(sessionId)) {
+          if (!isValidSessionId(sessionId)) await warnInvalidSessionId(sessionId);
+          return;
+        }
         await notifyPermission(sessionId, permissionId, event.properties?.title ?? '');
         return;
       }
@@ -392,7 +423,10 @@ export function createOpenCodeNotifierPlugin({
       if (event.type === 'session.status') {
         const sessionId = event.properties?.sessionID;
         const status = event.properties?.status;
-        if (!sessionId) return;
+        if (!isValidSessionId(sessionId)) {
+          await warnInvalidSessionId(sessionId);
+          return;
+        }
 
         if (typeof status === 'object' && status?.type === 'idle') {
           await notifyRootSession(sessionId);
@@ -415,7 +449,10 @@ export function createOpenCodeNotifierPlugin({
 
       if (event.type === 'session.error') {
         const sessionId = event.properties?.sessionID;
-        if (!sessionId) return;
+        if (!isValidSessionId(sessionId)) {
+          await warnInvalidSessionId(sessionId);
+          return;
+        }
 
         try {
           const session = await getSessionInfo(sessionId);
@@ -441,7 +478,10 @@ export function createOpenCodeNotifierPlugin({
       if (event.type !== 'session.idle') return;
 
       const sessionId = event.properties?.sessionID;
-      if (!sessionId) return;
+      if (!isValidSessionId(sessionId)) {
+        await warnInvalidSessionId(sessionId);
+        return;
+      }
       await notifyRootSession(sessionId);
     },
   };
