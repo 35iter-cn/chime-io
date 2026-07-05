@@ -1,6 +1,13 @@
 # Change Log - @chime-io/plugin-opencode
 
-This log was last generated on Tue, 23 Jun 2026 10:12:04 GMT and should not be manually modified.
+This log was last generated on Sun, 05 Jul 2026 13:51:25 GMT and should not be manually modified.
+
+## 1.2.0
+Sun, 05 Jul 2026 13:51:25 GMT
+
+### Minor changes
+
+- feat: professionalize notification wording and add lifecycle diagnostic logs for notification dispatch
 
 ## 1.1.1
 Tue, 23 Jun 2026 10:12:04 GMT

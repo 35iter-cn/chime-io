@@ -1,6 +1,11 @@
 # Change Log - @chime-io/cli
 
-This log was last generated on Thu, 14 May 2026 03:48:54 GMT and should not be manually modified.
+This log was last generated on Sun, 05 Jul 2026 13:51:25 GMT and should not be manually modified.
+
+## 1.1.2
+Sun, 05 Jul 2026 13:51:25 GMT
+
+_Version update only_
 
 ## 1.1.1
 Thu, 14 May 2026 03:48:54 GMT

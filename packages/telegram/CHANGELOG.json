@@ -2,6 +2,18 @@
   "name": "@chime-io/channel-telegram",
   "entries": [
     {
+      "version": "1.2.0",
+      "tag": "@chime-io/channel-telegram_v1.2.0",
+      "date": "Sun, 05 Jul 2026 13:51:25 GMT",
+      "comments": {
+        "minor": [
+          {
+            "comment": "feat: add Telegram HTML rich-text renderer with emoji icons, code blocks, and blockquote hints for 4 notification kinds"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.0",
       "tag": "@chime-io/channel-telegram_v1.1.0",
       "date": "Fri, 10 Apr 2026 22:11:22 GMT",

@@ -1,6 +1,13 @@
 # Change Log - @chime-io/channel-telegram
 
-This log was last generated on Fri, 10 Apr 2026 22:11:22 GMT and should not be manually modified.
+This log was last generated on Sun, 05 Jul 2026 13:51:25 GMT and should not be manually modified.
+
+## 1.2.0
+Sun, 05 Jul 2026 13:51:25 GMT
+
+### Minor changes
+
+- feat: add Telegram HTML rich-text renderer with emoji icons, code blocks, and blockquote hints for 4 notification kinds
 
 ## 1.1.0
 Fri, 10 Apr 2026 22:11:22 GMT
