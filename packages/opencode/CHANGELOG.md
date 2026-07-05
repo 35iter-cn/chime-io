@@ -1,6 +1,13 @@
 # Change Log - @chime-io/plugin-opencode
 
-This log was last generated on Sun, 05 Jul 2026 13:51:25 GMT and should not be manually modified.
+This log was last generated on Sun, 05 Jul 2026 14:29:29 GMT and should not be manually modified.
+
+## 1.2.1
+Sun, 05 Jul 2026 14:29:29 GMT
+
+### Patches
+
+- fix(plugin-opencode): avoid premature completed notification when model enters retry state
 
 ## 1.2.0
 Sun, 05 Jul 2026 13:51:25 GMT

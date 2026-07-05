@@ -2,6 +2,18 @@
   "name": "@chime-io/plugin-opencode",
   "entries": [
     {
+      "version": "1.2.1",
+      "tag": "@chime-io/plugin-opencode_v1.2.1",
+      "date": "Sun, 05 Jul 2026 14:29:29 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "fix(plugin-opencode): avoid premature completed notification when model enters retry state"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.2.0",
       "tag": "@chime-io/plugin-opencode_v1.2.0",
       "date": "Sun, 05 Jul 2026 13:51:25 GMT",
