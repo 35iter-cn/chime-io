@@ -83,7 +83,7 @@ interface PermissionEventProperties {
 
 interface SessionEventProperties {
   sessionID?: string;
-  status?: { type?: string } | 'busy';
+  status?: { type?: string } | { type: 'retry'; attempt?: number; message?: string; next?: number } | 'busy';
   error?: OpenCodeErrorLike | string;
   info?: OpenCodeSession;
 }
@@ -151,6 +151,7 @@ export function createOpenCodeNotifierPlugin({
 }: CreateOpenCodeNotifierPluginOptions): OpenCodeNotifierPlugin {
   const sessionCache = new Map<string, OpenCodeSession>();
   const rootActivity = new Map<string, boolean>();
+  const rootRetryPending = new Map<string, boolean>();
   const notifyingRoots = new Set<string>();
   const rootErrors = new Map<string, string>();
   const notifiedTaskErrors = new Set<string>();
@@ -245,6 +246,10 @@ export function createOpenCodeNotifierPlugin({
       });
       if (rootSession.id !== sessionId) return;
       if (!rootActivity.get(rootSession.id)) return;
+      if (rootRetryPending.get(rootSession.id)) {
+        await appendLifecycleLog('notifyRootSession.retryPending', { rootId: rootSession.id });
+        return;
+      }
       if (notifyingRoots.has(rootSession.id)) return;
 
       notifyingRoots.add(rootSession.id);
@@ -262,6 +267,7 @@ export function createOpenCodeNotifierPlugin({
 
       await appendLifecycleLog('notifyRootSession.sent', { rootId: rootSession.id });
       rootActivity.set(rootSession.id, false);
+      rootRetryPending.delete(rootSession.id);
       rootErrors.delete(rootSession.id);
     } catch (error) {
       await appendLifecycleLog('notifyRootSession.error', {
@@ -448,11 +454,26 @@ export function createOpenCodeNotifierPlugin({
           return;
         }
 
+        if (typeof status === 'object' && status?.type === 'retry') {
+          try {
+            const rootSession = await getRootSessionInfo(sessionId);
+            rootRetryPending.set(rootSession.id, true);
+            await appendLifecycleLog('session.status.retry', { rootId: rootSession.id });
+          } catch (error) {
+            await logger.warn('Failed to resolve root session for retry event', {
+              sessionId,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+          return;
+        }
+
         if (!isBusyStatus(status)) return;
 
         try {
           const rootSession = await getRootSessionInfo(sessionId);
           rootActivity.set(rootSession.id, true);
+          rootRetryPending.delete(rootSession.id);
         } catch (error) {
           await logger.warn('Failed to resolve root session for status event', {
             sessionId,

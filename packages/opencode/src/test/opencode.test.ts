@@ -166,6 +166,168 @@ test("createOpenCodeNotifierPlugin skips notification for invalid sessionID", as
   assert.equal(warnings[0]!.extra?.sessionId, "xHLOinvalid");
 });
 
+test("createOpenCodeNotifierPlugin sends completed notification after session.idle", async () => {
+  const notifyCalls: unknown[] = [];
+
+  const plugin = createOpenCodeNotifierPlugin({
+    client: {
+      session: {
+        get: async ({ sessionID }: { sessionID: string }) => ({
+          data: { id: sessionID, title: "demo-session", parentID: null },
+        }),
+        messages: async () => ({ data: [] }),
+      },
+    },
+    notifier: {
+      notify: async (notification) => {
+        notifyCalls.push(notification);
+      },
+    },
+    logger: { warn: async () => undefined },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.status",
+      properties: {
+        sessionID: "ses_root-session",
+        status: { type: "busy" },
+      },
+    },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.idle",
+      properties: {
+        sessionID: "ses_root-session",
+      },
+    },
+  });
+
+  assert.equal(notifyCalls.length, 1);
+  assert.equal((notifyCalls[0] as { kind: string }).kind, "session.completed");
+});
+
+test("createOpenCodeNotifierPlugin skips completed notification when retry is pending", async () => {
+  const notifyCalls: unknown[] = [];
+
+  const plugin = createOpenCodeNotifierPlugin({
+    client: {
+      session: {
+        get: async ({ sessionID }: { sessionID: string }) => ({
+          data: { id: sessionID, title: "demo-session", parentID: null },
+        }),
+        messages: async () => ({ data: [] }),
+      },
+    },
+    notifier: {
+      notify: async (notification) => {
+        notifyCalls.push(notification);
+      },
+    },
+    logger: { warn: async () => undefined },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.status",
+      properties: {
+        sessionID: "ses_root-session",
+        status: { type: "busy" },
+      },
+    },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.status",
+      properties: {
+        sessionID: "ses_root-session",
+        status: { type: "retry", attempt: 1, message: "retrying", next: 0 },
+      },
+    },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.idle",
+      properties: {
+        sessionID: "ses_root-session",
+      },
+    },
+  });
+
+  assert.equal(
+    notifyCalls.length,
+    0,
+    "should not notify while retry is pending",
+  );
+});
+
+test("createOpenCodeNotifierPlugin resumes notification after retry then new busy", async () => {
+  const notifyCalls: unknown[] = [];
+
+  const plugin = createOpenCodeNotifierPlugin({
+    client: {
+      session: {
+        get: async ({ sessionID }: { sessionID: string }) => ({
+          data: { id: sessionID, title: "demo-session", parentID: null },
+        }),
+        messages: async () => ({ data: [] }),
+      },
+    },
+    notifier: {
+      notify: async (notification) => {
+        notifyCalls.push(notification);
+      },
+    },
+    logger: { warn: async () => undefined },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.status",
+      properties: {
+        sessionID: "ses_root-session",
+        status: { type: "busy" },
+      },
+    },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.status",
+      properties: {
+        sessionID: "ses_root-session",
+        status: { type: "retry", attempt: 1, message: "retrying", next: 0 },
+      },
+    },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.status",
+      properties: {
+        sessionID: "ses_root-session",
+        status: { type: "busy" },
+      },
+    },
+  });
+
+  await plugin.event({
+    event: {
+      type: "session.idle",
+      properties: {
+        sessionID: "ses_root-session",
+      },
+    },
+  });
+
+  assert.equal(notifyCalls.length, 1);
+  assert.equal((notifyCalls[0] as { kind: string }).kind, "session.completed");
+});
+
 test("createOpenCodeNotifierPlugin skips question notification for invalid sessionID", async () => {
   const warnings: Array<{ message: string; extra?: Record<string, unknown> }> = [];
   const clientGetCalls: string[] = [];
