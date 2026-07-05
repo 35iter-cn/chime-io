@@ -1,10 +1,10 @@
 import {
-  createMessageRenderer,
   type MessageRenderer,
   type NotificationChannel,
 } from '@chime-io/core';
 
 import { postJson, type JsonPost } from '../transport/https.js';
+import { createTelegramHtmlRenderer, type HtmlRenderer } from '../render.js';
 
 export interface TelegramSendResult {
   message_id: number;
@@ -21,7 +21,8 @@ export interface CreateTelegramChannelOptions {
   userId: string;
   parseMode?: 'HTML' | 'MarkdownV2' | 'Markdown';
   silent?: boolean;
-  renderer?: MessageRenderer;
+  /** 自定义渲染器。默认使用 Telegram HTML 富文本渲染器 */
+  renderer?: MessageRenderer | HtmlRenderer;
   post?: JsonPost;
 }
 
@@ -41,17 +42,18 @@ export function createTelegramChannel({
     throw new Error('Telegram user ID is required');
   }
 
-  const renderMessage = renderer ?? createMessageRenderer();
+  const renderMessage = renderer ?? createTelegramHtmlRenderer();
 
   return {
     id: 'telegram',
     async send(notification) {
+      const text = renderMessage(notification);
       const response = await post<TelegramApiResponse>({
         hostname: 'api.telegram.org',
         path: `/bot${token}/sendMessage`,
         body: {
           chat_id: userId,
-          text: renderMessage(notification),
+          text,
           parse_mode: parseMode,
           disable_notification: silent,
         },

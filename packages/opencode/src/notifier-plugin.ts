@@ -235,6 +235,14 @@ export function createOpenCodeNotifierPlugin({
 
     try {
       const rootSession = await getRootSessionInfo(sessionId);
+      await appendLifecycleLog('notifyRootSession.check', {
+        sessionId,
+        rootId: rootSession.id,
+        isRoot: rootSession.id === sessionId,
+        rootActivity: rootActivity.get(rootSession.id),
+        hasRootError: rootErrors.has(rootSession.id),
+        alreadyNotifying: notifyingRoots.has(rootSession.id),
+      });
       if (rootSession.id !== sessionId) return;
       if (!rootActivity.get(rootSession.id)) return;
       if (notifyingRoots.has(rootSession.id)) return;
@@ -243,16 +251,23 @@ export function createOpenCodeNotifierPlugin({
       notifiedRootId = rootSession.id;
 
       if (rootErrors.has(rootSession.id)) {
+        await appendLifecycleLog('notifyRootSession.sendingError', { rootId: rootSession.id });
         await notifier.notify(
           await formatter.formatSessionError(rootSession, rootErrors.get(rootSession.id)),
         );
       } else {
+        await appendLifecycleLog('notifyRootSession.sendingComplete', { rootId: rootSession.id });
         await notifier.notify(await formatter.formatSessionCompleted(rootSession));
       }
 
+      await appendLifecycleLog('notifyRootSession.sent', { rootId: rootSession.id });
       rootActivity.set(rootSession.id, false);
       rootErrors.delete(rootSession.id);
     } catch (error) {
+      await appendLifecycleLog('notifyRootSession.error', {
+        sessionId,
+        error: error instanceof Error ? error.message : String(error),
+      });
       await logger.warn('Failed to process notification event', {
         sessionId,
         error: error instanceof Error ? error.message : String(error),

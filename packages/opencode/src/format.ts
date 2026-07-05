@@ -211,7 +211,7 @@ export function createOpenCodeEventFormatter({
         agent: 'opencode',
         kind: 'session.error',
         title: `OpenCode · ${session.title ?? session.slug ?? getShortSessionId(session.id)}`,
-        lines: [`出错啦：${resolvedError || 'Unknown error'}`],
+        lines: [resolvedError || 'Unknown error'],
         metadata: { sessionId: session.id },
       };
     },
@@ -221,11 +221,7 @@ export function createOpenCodeEventFormatter({
         agent: 'opencode',
         kind: 'interaction.question',
         title: `OpenCode · ${session.title ?? session.slug ?? getShortSessionId(session.id)}`,
-        lines: [
-          questionText
-            ? `Agent 正在等你回答：${truncateText(questionText)}`
-            : 'Agent 正在等你回答',
-        ],
+        lines: [questionText ? truncateText(questionText) : ''],
         metadata: { sessionId: session.id },
       };
     },
@@ -235,11 +231,7 @@ export function createOpenCodeEventFormatter({
         agent: 'opencode',
         kind: 'interaction.permission',
         title: `OpenCode · ${session.title ?? session.slug ?? getShortSessionId(session.id)}`,
-        lines: [
-          title
-            ? `Agent 需要你的确认：${truncateText(title)}`
-            : 'Agent 需要你的确认',
-        ],
+        lines: [title ? truncateText(title) : ''],
         metadata: { sessionId: session.id },
       };
     },
