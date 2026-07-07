@@ -1,6 +1,13 @@
 # Change Log - @chime-io/plugin-claude
 
-This log was last generated on Tue, 07 Jul 2026 02:32:46 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jul 2026 03:56:09 GMT and should not be manually modified.
+
+## 2.0.1
+Tue, 07 Jul 2026 03:56:09 GMT
+
+### Patches
+
+- Update README installation to use remote marketplace and trim local marketplace manifest
 
 ## 2.0.0
 Tue, 07 Jul 2026 02:32:46 GMT

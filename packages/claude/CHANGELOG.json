@@ -2,6 +2,18 @@
   "name": "@chime-io/plugin-claude",
   "entries": [
     {
+      "version": "2.0.1",
+      "tag": "@chime-io/plugin-claude_v2.0.1",
+      "date": "Tue, 07 Jul 2026 03:56:09 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Update README installation to use remote marketplace and trim local marketplace manifest"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.0",
       "tag": "@chime-io/plugin-claude_v2.0.0",
       "date": "Tue, 07 Jul 2026 02:32:46 GMT",
