@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add prepublishOnly script to sync plugin.json version with package.json",
+      "type": "patch",
+      "packageName": "@chime-io/plugin-claude"
+    }
+  ],
+  "packageName": "@chime-io/plugin-claude",
+  "email": "rxh12352@gmail.com"
+}
