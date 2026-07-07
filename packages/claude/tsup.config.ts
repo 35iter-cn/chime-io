@@ -17,4 +17,5 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   dts: true,
+  noExternal: ['@chime-io/core', '@chime-io/channel-telegram'],
 });

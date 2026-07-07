@@ -1,6 +1,6 @@
 {
   "name": "chime-io-notifier",
-  "version": "1.0.0",
+  "version": "2.0.1",
   "description": "Send notifications to Telegram when Claude Code sessions complete or need attention",
   "author": {
     "name": "chime-io",
