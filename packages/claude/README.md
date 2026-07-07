@@ -20,39 +20,21 @@ Get instant Telegram notifications when Claude Code finishes tasks, encounters e
 
 ## Installation
 
-### Method 1: Copy to Plugins Directory
+Install `chime-io-notifier` from the `35iter-cn/claude-plugins` marketplace:
 
 ```bash
-# 1. Build the plugin (from monorepo root)
-pnpm rush:install
-pnpm --filter @chime-io/plugin-claude build
+# 1. Add the marketplace
+claude /plugin marketplace add 35iter-cn/claude-plugins
 
-# 2. Copy to Claude Code plugins
-cp -r packages/claude ~/.claude/plugins/chime-io-notifier
-
-# 3. Enable the plugin
-claude config set enabledPlugins '["chime-io-notifier"]'
-```
-
-### Method 2: Local Marketplace (Development)
-
-```bash
-# 1. Ensure running as non-root user
-# 2. Add local marketplace
-claude /plugin marketplace add /path/to/this/repo
-
-# 3. Install from /plugin interface
-# Look for "chime-io-notifier" from "telnotify-dev"
-```
-
-### Verify Installation
-
-```bash
-# Check installed plugins
+# 2. Install the plugin from the /plugin interface
 claude /plugin
+# Look for "chime-io-notifier" from "35iter-cn-claude-plugins"
 
-# The plugin should appear in the list
+# 3. Apply the plugin
+claude /reload-plugins
 ```
+
+Once installed, run `claude /plugin` and confirm `chime-io-notifier` appears in the list.
 
 ---
 
@@ -134,6 +116,19 @@ Waiting for your response...
 
 ## Development
 
+### Local Marketplace Testing
+
+```bash
+# 1. Ensure running as non-root user
+# 2. Add local marketplace from this package
+claude /plugin marketplace add /path/to/telnotify/packages/claude
+
+# 3. Install from /plugin interface
+# Look for "chime-io-notifier" from "telnotify-local"
+```
+
+### Build & Test
+
 ```bash
 # Install dependencies
 pnpm rush:install
@@ -167,19 +162,14 @@ packages/claude/
 │   │   └── *.test.ts           # Test files
 │   └── index.ts                # Plugin entry
 ├── .claude-plugin/
-│   └── manifest.json           # Plugin manifest
+│   ├── marketplace.json        # Local development marketplace manifest
+│   └── plugin.json             # Plugin manifest
 └── README.md
 ```
 
 ---
 
 ## Troubleshooting
-
-### Plugin Not Appearing
-
-1. Ensure running `claude` CLI as non-root user
-2. Check `~/.claude/plugins/` for the plugin directory
-3. Verify `claude config get enabledPlugins` includes `"chime-io-notifier"`
 
 ### Notifications Not Sending
 
