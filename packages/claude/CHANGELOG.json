@@ -2,6 +2,18 @@
   "name": "@chime-io/plugin-claude",
   "entries": [
     {
+      "version": "2.0.3",
+      "tag": "@chime-io/plugin-claude_v2.0.3",
+      "date": "Tue, 07 Jul 2026 06:30:34 GMT",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add prepublishOnly script to sync plugin.json version with package.json"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.0.2",
       "tag": "@chime-io/plugin-claude_v2.0.2",
       "date": "Tue, 07 Jul 2026 06:18:10 GMT",

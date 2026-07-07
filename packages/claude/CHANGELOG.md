@@ -1,6 +1,13 @@
 # Change Log - @chime-io/plugin-claude
 
-This log was last generated on Tue, 07 Jul 2026 06:18:10 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jul 2026 06:30:34 GMT and should not be manually modified.
+
+## 2.0.3
+Tue, 07 Jul 2026 06:30:34 GMT
+
+### Patches
+
+- Add prepublishOnly script to sync plugin.json version with package.json
 
 ## 2.0.2
 Tue, 07 Jul 2026 06:18:10 GMT
