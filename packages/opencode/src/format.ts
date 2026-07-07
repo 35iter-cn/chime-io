@@ -1,3 +1,12 @@
+import {
+  block,
+  createNotification,
+  type Block,
+  type FieldEntry,
+  type Notification,
+  type StatEntry,
+} from '@chime-io/core';
+
 const MAX_RESULT_LENGTH = 160;
 
 export interface SessionSummary {
@@ -56,19 +65,14 @@ export interface OpenCodeConversationMessage {
   parts?: OpenCodeMessagePart[];
 }
 
-export interface OpenCodeNotification {
-  agent: 'opencode';
-  kind: 'session.completed' | 'session.error' | 'interaction.question' | 'interaction.permission';
-  title: string;
-  lines: string[];
-  metadata: { sessionId: string };
-}
-
 export interface OpenCodeEventFormatter {
-  formatSessionCompleted(session: OpenCodeSession): Promise<OpenCodeNotification>;
-  formatSessionError(session: OpenCodeSession, errorMessage?: string): Promise<OpenCodeNotification>;
-  formatQuestion(session: OpenCodeSession, questionText?: string): OpenCodeNotification;
-  formatPermission(session: OpenCodeSession, title?: string): OpenCodeNotification;
+  formatSessionCompleted(session: OpenCodeSession): Promise<Notification>;
+  formatSessionError(
+    session: OpenCodeSession,
+    errorMessage?: string,
+  ): Promise<Notification>;
+  formatQuestion(session: OpenCodeSession, questionText?: string): Notification;
+  formatPermission(session: OpenCodeSession, title?: string): Notification;
 }
 
 export interface CreateOpenCodeEventFormatterOptions {
@@ -76,7 +80,9 @@ export interface CreateOpenCodeEventFormatterOptions {
 }
 
 function normalizeSummaryText(value: unknown): string {
-  return String(value ?? '').replace(/\s+/g, ' ').trim();
+  return String(value ?? '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 export function truncateText(value: unknown, maxLength = MAX_RESULT_LENGTH): string {
@@ -86,20 +92,23 @@ export function truncateText(value: unknown, maxLength = MAX_RESULT_LENGTH): str
   return `${normalized.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
-export function formatChangeSummary(session: Pick<OpenCodeSession, 'summary'>): string {
-  if (!session.summary) return '';
+export function buildChangeStats(
+  session: Pick<OpenCodeSession, 'summary'>,
+): StatEntry[] {
+  if (!session.summary) return [];
 
   const { additions = 0, deletions = 0, files = 0 } = session.summary;
-  const parts: string[] = [];
+  const stats: StatEntry[] = [];
+  if (additions > 0) stats.push({ label: 'additions', value: additions });
+  if (deletions > 0) stats.push({ label: 'deletions', value: deletions });
+  if (files > 0) stats.push({ label: 'files', value: files });
 
-  if (additions > 0) parts.push(`+${additions}`);
-  if (deletions > 0) parts.push(`-${deletions}`);
-  if (files > 0) parts.push(`${files} file${files === 1 ? '' : 's'}`);
-
-  return parts.join(' · ');
+  return stats;
 }
 
-export function extractErrorMessage(error: OpenCodeErrorLike | string | null | undefined): string {
+export function extractErrorMessage(
+  error: OpenCodeErrorLike | string | null | undefined,
+): string {
   if (!error) return '';
   if (typeof error === 'string') return truncateText(error);
 
@@ -118,7 +127,9 @@ export function extractErrorMessage(error: OpenCodeErrorLike | string | null | u
   return truncateText(String(error));
 }
 
-export function extractLastResultFromMessages(messages: OpenCodeConversationMessage[]): string {
+export function extractLastResultFromMessages(
+  messages: OpenCodeConversationMessage[],
+): string {
   for (let messageIndex = messages.length - 1; messageIndex >= 0; messageIndex -= 1) {
     const message = messages[messageIndex];
     if (message?.info?.role !== 'assistant') continue;
@@ -146,7 +157,8 @@ export function extractLastResultFromMessages(messages: OpenCodeConversationMess
         part.files.length > 0
       ) {
         const listedFiles = part.files.slice(0, 2).join(', ');
-        const remainder = part.files.length > 2 ? ` 等${part.files.length}个文件` : '';
+        const remainder =
+          part.files.length > 2 ? ` 等${part.files.length}个文件` : '';
         return truncateText(`修改：${listedFiles}${remainder}`);
       }
     }
@@ -155,7 +167,9 @@ export function extractLastResultFromMessages(messages: OpenCodeConversationMess
   return '';
 }
 
-export function extractLastErrorFromMessages(messages: OpenCodeConversationMessage[]): string {
+export function extractLastErrorFromMessages(
+  messages: OpenCodeConversationMessage[],
+): string {
   for (let messageIndex = messages.length - 1; messageIndex >= 0; messageIndex -= 1) {
     const message = messages[messageIndex];
     if (message?.info?.role !== 'assistant') continue;
@@ -182,58 +196,106 @@ function getShortSessionId(sessionId: string): string {
   return String(sessionId).slice(0, 8);
 }
 
+function getSubject(session: OpenCodeSession): string {
+  return session.title ?? session.slug ?? getShortSessionId(session.id);
+}
+
+function buildSessionFields(session: OpenCodeSession): FieldEntry[] {
+  const fields: FieldEntry[] = [];
+  if (session.slug) fields.push({ label: 'slug', value: session.slug });
+  if (session.parentID) fields.push({ label: 'parent', value: session.parentID });
+  return fields;
+}
+
 export function createOpenCodeEventFormatter({
   listMessages,
 }: CreateOpenCodeEventFormatterOptions): OpenCodeEventFormatter {
   return {
     async formatSessionCompleted(session) {
       const messages = await listMessages(session.id);
-      const changeSummary = formatChangeSummary(session);
+      const stats = buildChangeStats(session);
+      const fields = buildSessionFields(session);
       const lastResult = extractLastResultFromMessages(messages);
 
-      return {
+      const blocks: Block[] = [];
+      if (stats.length > 0) blocks.push(block.stats(stats));
+      if (fields.length > 0) blocks.push(block.fields(fields));
+      if (lastResult) {
+        blocks.push(block.paragraph(lastResult));
+      } else if (stats.length === 0) {
+        blocks.push(
+          block.paragraph(
+            `主会话已完成 · session ${getShortSessionId(session.id)}`,
+          ),
+        );
+      }
+
+      return createNotification({
         agent: 'opencode',
         kind: 'session.completed',
-        title: `OpenCode · ${session.title ?? session.slug ?? getShortSessionId(session.id)}`,
-        lines: [
-          changeSummary || `主会话已完成 · session ${getShortSessionId(session.id)}`,
-          lastResult,
-        ].filter((line): line is string => Boolean(line)),
+        intent: 'completion',
+        severity: 'info',
+        requiresAction: false,
+        subject: getSubject(session),
+        blocks,
         metadata: { sessionId: session.id },
-      };
+      });
     },
 
     async formatSessionError(session, errorMessage) {
       const messages = await listMessages(session.id);
-      const resolvedError = errorMessage || extractLastErrorFromMessages(messages);
+      const resolvedError =
+        errorMessage || extractLastErrorFromMessages(messages) || 'Unknown error';
+      const fields = buildSessionFields(session);
 
-      return {
+      const blocks: Block[] = [];
+      if (fields.length > 0) blocks.push(block.fields(fields));
+      blocks.push(block.code(resolvedError));
+
+      return createNotification({
         agent: 'opencode',
         kind: 'session.error',
-        title: `OpenCode · ${session.title ?? session.slug ?? getShortSessionId(session.id)}`,
-        lines: [resolvedError || 'Unknown error'],
-        metadata: { sessionId: session.id },
-      };
+        intent: 'error',
+        severity: 'critical',
+        requiresAction: true,
+        subject: getSubject(session),
+        blocks,
+        metadata: { sessionId: session.id, error: resolvedError },
+      });
     },
 
     formatQuestion(session, questionText) {
-      return {
+      const question = questionText ? truncateText(questionText) : '';
+      const blocks: Block[] = [];
+      if (question) blocks.push(block.paragraph(question));
+
+      return createNotification({
         agent: 'opencode',
         kind: 'interaction.question',
-        title: `OpenCode · ${session.title ?? session.slug ?? getShortSessionId(session.id)}`,
-        lines: [questionText ? truncateText(questionText) : ''],
+        intent: 'question',
+        severity: 'info',
+        requiresAction: true,
+        subject: getSubject(session),
+        blocks,
         metadata: { sessionId: session.id },
-      };
+      });
     },
 
     formatPermission(session, title) {
-      return {
+      const permissionTitle = title ? truncateText(title) : '';
+      const blocks: Block[] = [];
+      if (permissionTitle) blocks.push(block.paragraph(permissionTitle));
+
+      return createNotification({
         agent: 'opencode',
         kind: 'interaction.permission',
-        title: `OpenCode · ${session.title ?? session.slug ?? getShortSessionId(session.id)}`,
-        lines: [title ? truncateText(title) : ''],
-        metadata: { sessionId: session.id },
-      };
+        intent: 'permission',
+        severity: 'warning',
+        requiresAction: true,
+        subject: getSubject(session),
+        blocks,
+        metadata: { sessionId: session.id, permissionTitle },
+      });
     },
   };
 }

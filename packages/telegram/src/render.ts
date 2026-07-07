@@ -1,12 +1,11 @@
-import type { Notification } from '@chime-io/core';
+import type {
+  Block,
+  ChannelRenderer,
+  Intent,
+} from '@chime-io/core';
 
 /**
- * HTML 渲染器类型
- */
-export type HtmlRenderer = (notification: Notification) => string;
-
-/**
- * 转义 HTML 特殊字符
+ * Escape HTML special characters for Telegram HTML parse mode.
  */
 function escapeHtml(text: string): string {
   return text
@@ -15,87 +14,105 @@ function escapeHtml(text: string): string {
     .replace(/>/g, '&gt;');
 }
 
-interface KindConfig {
+interface IntentConfig {
   emoji: string;
   label: string;
-  hint: string;
 }
 
-const KIND_CONFIG: Record<string, KindConfig> = {
-  'session.completed': {
+const INTENT_CONFIG: Record<Intent, IntentConfig> = {
+  completion: {
     emoji: '✅',
     label: '会话完成',
-    hint: '无需立即处理，可稍后查看',
   },
-  'session.error': {
+  error: {
     emoji: '🚨',
     label: '会话出错',
-    hint: '建议立即检查，可能需要人工干预',
   },
-  'interaction.question': {
+  question: {
     emoji: '❓',
     label: '等待回答',
-    hint: '需要你回复后 Agent 才能继续',
   },
-  'interaction.permission': {
+  permission: {
     emoji: '⚡',
     label: '操作待确认',
-    hint: '请回到 OpenCode 确认或取消此操作',
+  },
+  tool_failure: {
+    emoji: '🔧',
+    label: '工具失败',
   },
 };
 
-function getKindConfig(kind: string): KindConfig {
-  return KIND_CONFIG[kind] ?? { emoji: '📌', label: '通知', hint: '' };
+const FALLBACK_INTENT_CONFIG: IntentConfig = {
+  emoji: '📌',
+  label: '通知',
+};
+
+function getIntentConfig(intent: Intent): IntentConfig {
+  return INTENT_CONFIG[intent] ?? FALLBACK_INTENT_CONFIG;
+}
+
+function renderBlock(block: Block): string {
+  switch (block.type) {
+    case 'paragraph': {
+      const content = escapeHtml(block.content);
+      return block.style === 'muted' ? `<i>${content}</i>` : content;
+    }
+    case 'code': {
+      return `<code>${escapeHtml(block.content)}</code>`;
+    }
+    case 'list': {
+      return block.items
+        .map((item) => `• ${escapeHtml(item)}`)
+        .join('\n');
+    }
+    case 'fields': {
+      return block.fields
+        .map(
+          (field) =>
+            `<b>${escapeHtml(field.label)}:</b> ${escapeHtml(field.value)}`,
+        )
+        .join('\n');
+    }
+    case 'stats': {
+      const inline = block.stats
+        .map(
+          (stat) =>
+            `${escapeHtml(stat.label)}: ${escapeHtml(String(stat.value))}`,
+        )
+        .join(' · ');
+      return `<code>${inline}</code>`;
+    }
+  }
 }
 
 /**
- * 从 Notification.title 提取会话标题
- * title 格式为 "OpenCode · {sessionTitle}"
- */
-function extractSessionTitle(title: string): string {
-  const separator = ' · ';
-  const index = title.indexOf(separator);
-  if (index === -1) return title;
-  return title.slice(index + separator.length);
-}
-
-/**
- * 创建 Telegram HTML 消息渲染器
+ * Create a Telegram HTML {@link ChannelRenderer}.
  *
- * 输出格式：
- * - 通知气泡预览：纯文本摘要（Telegram 自动取首行）
- * - 展开后：HTML 富文本，含 emoji 图标、粗体标题、等宽代码、引用提示
+ * The renderer composes the header (emoji + agent display name + intent label)
+ * from the resolved {@link AgentDescriptor} plus the notification's `intent`,
+ * then serializes each channel-neutral block into Telegram HTML.
  */
-export function createTelegramHtmlRenderer(): HtmlRenderer {
-  return (notification) => {
-    const config = getKindConfig(notification.kind);
-    const sessionTitle = escapeHtml(extractSessionTitle(notification.title));
-    const lines = notification.lines.filter((line): line is string => Boolean(line));
+export function createTelegramHtmlRenderer(): ChannelRenderer<string> {
+  return (notification, resolveAgent) => {
+    const descriptor = resolveAgent(notification.agent);
+    const displayName = descriptor?.displayName ?? notification.agent;
+    const config = getIntentConfig(notification.intent);
+    const emoji = config === FALLBACK_INTENT_CONFIG
+      ? descriptor?.defaultEmoji ?? config.emoji
+      : config.emoji;
 
     const parts: string[] = [];
-
-    // 标题行：emoji + 粗体标签
-    parts.push(`<b>${config.emoji} OpenCode · ${config.label}</b>`);
+    parts.push(
+      `<b>${emoji} ${escapeHtml(displayName)} · ${escapeHtml(config.label)}</b>`,
+    );
     parts.push('');
-    parts.push(`<b>${sessionTitle}</b>`);
 
-    // 内容行
-    for (const line of lines) {
-      const escaped = escapeHtml(line);
-      // 变更摘要（+/-/files 模式）用等宽字体
-      if (/^\+?\d*\s*·\s*-?\d*\s*·\s*\d+\s*files?/.test(line)) {
-        parts.push(`<code>${escaped}</code>`);
-      } else if (notification.kind === 'session.error') {
-        parts.push(`<code>${escaped}</code>`);
-      } else {
-        parts.push(escaped);
-      }
+    if (notification.subject) {
+      parts.push(`<b>${escapeHtml(notification.subject)}</b>`);
     }
 
-    // 提示行
-    if (config.hint) {
-      parts.push('');
-      parts.push(`<blockquote>${escapeHtml(config.hint)}</blockquote>`);
+    for (const block of notification.blocks) {
+      parts.push(renderBlock(block));
     }
 
     return parts.join('\n');

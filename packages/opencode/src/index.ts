@@ -1,11 +1,19 @@
-import { createNotifier, createLogger, createAgentLogger } from "@chime-io/core";
+import {
+  createAgentRegistry,
+  createNotifier,
+  createLogger,
+  createAgentLogger,
+} from "@chime-io/core";
 import { createTelegramChannel } from "@chime-io/channel-telegram";
 
+import { opencodeDescriptor } from "./agent.js";
 import {
   createOpenCodeNotifierPlugin,
   type OpenCodeLogger,
   type OpenCodeClient,
 } from "./notifier-plugin.js";
+
+export { opencodeDescriptor } from "./agent.js";
 
 function createOpenCodeLogger(client: OpenCodeClient): OpenCodeLogger {
   const logFilePath = process.env.CHIME_LOG_FILE || "/tmp/chime-opencode.log";
@@ -25,7 +33,6 @@ function createOpenCodeLogger(client: OpenCodeClient): OpenCodeLogger {
   return {
     async warn(message, extra) {
       await agentLogger.warn(message, extra);
-      // 同时发送到 OpenCode 客户端日志（如果可用）
       if (client.app?.log) {
         await client.app.log({
           body: {
@@ -55,6 +62,8 @@ export async function OpenCodeTelegramPlugin({
         : "HTML";
   const silent = process.env.TELEGRAM_SILENT === "1";
 
+  const registry = createAgentRegistry([opencodeDescriptor]);
+
   const notifier = createNotifier({
     channels: [
       createTelegramChannel({
@@ -62,6 +71,7 @@ export async function OpenCodeTelegramPlugin({
         userId: userId ?? "",
         parseMode,
         silent,
+        resolveAgent: (id) => registry.lookup(id),
       }),
     ],
   });

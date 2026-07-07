@@ -1,121 +1,190 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { createNotification } from '@chime-io/core';
+import {
+  block,
+  createAgentRegistry,
+  createNotification,
+  type AgentDescriptor,
+  type NotificationInput,
+} from '@chime-io/core';
 
 import { createTelegramHtmlRenderer } from '../render.ts';
 
-test('createTelegramHtmlRenderer renders session.completed with emoji and code block', () => {
+const claudeDescriptor: AgentDescriptor = {
+  id: 'claude',
+  displayName: 'Claude',
+  defaultEmoji: '🤖',
+};
+
+const opencodeDescriptor: AgentDescriptor = {
+  id: 'opencode',
+  displayName: 'OpenCode',
+  defaultEmoji: '🧑‍💻',
+};
+
+function resolverFor(...descriptors: AgentDescriptor[]) {
+  const registry = createAgentRegistry(descriptors);
+  return (id: string) => registry.lookup(id);
+}
+
+function build(overrides: Partial<NotificationInput> = {}) {
+  const input: NotificationInput = {
+    agent: 'opencode',
+    kind: 'session.completed',
+    intent: 'completion',
+    severity: 'info',
+    requiresAction: false,
+    subject: 'feature-flow',
+    ...overrides,
+  };
+  return createNotification(input);
+}
+
+test('renders completion intent with descriptor display name and emoji', () => {
   const renderer = createTelegramHtmlRenderer();
   const result = renderer(
-    createNotification({
-      agent: 'opencode',
-      kind: 'session.completed',
-      title: 'OpenCode · feature-flow',
-      lines: ['+7 · -1 · 2 files', '任务已完成'],
+    build({
+      blocks: [
+        block.stats([
+          { label: 'additions', value: 7 },
+          { label: 'deletions', value: 1 },
+          { label: 'files', value: 2 },
+        ]),
+        block.paragraph('任务已完成'),
+      ],
     }),
+    resolverFor(opencodeDescriptor),
   );
 
   assert.match(result, /<b>✅ OpenCode · 会话完成<\/b>/);
   assert.match(result, /<b>feature-flow<\/b>/);
-  assert.match(result, /<code>\+7 · -1 · 2 files<\/code>/);
+  assert.match(
+    result,
+    /<code>additions: 7 · deletions: 1 · files: 2<\/code>/,
+  );
   assert.match(result, /任务已完成/);
-  assert.match(result, /<blockquote>无需立即处理/);
 });
 
-test('createTelegramHtmlRenderer renders session.error with error in code block', () => {
+test('renders error intent with code block from block content', () => {
   const renderer = createTelegramHtmlRenderer();
   const result = renderer(
-    createNotification({
-      agent: 'opencode',
+    build({
       kind: 'session.error',
-      title: 'OpenCode · feature-flow',
-      lines: ['TypeError: Cannot read properties of undefined'],
+      intent: 'error',
+      severity: 'critical',
+      requiresAction: true,
+      blocks: [block.code('TypeError: Cannot read properties of undefined')],
     }),
+    resolverFor(opencodeDescriptor),
   );
 
   assert.match(result, /<b>🚨 OpenCode · 会话出错<\/b>/);
-  assert.match(result, /<code>TypeError: Cannot read properties of undefined<\/code>/);
-  assert.match(result, /<blockquote>建议立即检查/);
+  assert.match(
+    result,
+    /<code>TypeError: Cannot read properties of undefined<\/code>/,
+  );
 });
 
-test('createTelegramHtmlRenderer renders interaction.question', () => {
+test('renders question intent header and content', () => {
   const renderer = createTelegramHtmlRenderer();
   const result = renderer(
-    createNotification({
-      agent: 'opencode',
+    build({
       kind: 'interaction.question',
-      title: 'OpenCode · refactor-db',
-      lines: ['你希望使用哪种数据库？'],
+      intent: 'question',
+      severity: 'info',
+      requiresAction: true,
+      subject: 'refactor-db',
+      blocks: [block.paragraph('你希望使用哪种数据库？')],
     }),
+    resolverFor(opencodeDescriptor),
   );
 
   assert.match(result, /<b>❓ OpenCode · 等待回答<\/b>/);
   assert.match(result, /<b>refactor-db<\/b>/);
   assert.match(result, /你希望使用哪种数据库？/);
-  assert.match(result, /<blockquote>需要你回复后/);
 });
 
-test('createTelegramHtmlRenderer renders interaction.permission', () => {
+test('renders permission intent header and content', () => {
   const renderer = createTelegramHtmlRenderer();
   const result = renderer(
-    createNotification({
-      agent: 'opencode',
+    build({
       kind: 'interaction.permission',
-      title: 'OpenCode · refactor-db',
-      lines: ['edit src/index.ts'],
+      intent: 'permission',
+      severity: 'warning',
+      requiresAction: true,
+      subject: 'refactor-db',
+      blocks: [block.paragraph('edit src/index.ts')],
     }),
+    resolverFor(opencodeDescriptor),
   );
 
   assert.match(result, /<b>⚡ OpenCode · 操作待确认<\/b>/);
   assert.match(result, /edit src\/index\.ts/);
-  assert.match(result, /<blockquote>请回到 OpenCode/);
 });
 
-test('createTelegramHtmlRenderer escapes HTML special characters', () => {
+test('renders tool_failure intent with dedicated header', () => {
   const renderer = createTelegramHtmlRenderer();
   const result = renderer(
-    createNotification({
-      agent: 'opencode',
-      kind: 'session.error',
-      title: 'OpenCode · <script>alert(1)</script>',
-      lines: ['error <b>with</b> & ampersand'],
+    build({
+      agent: 'claude',
+      kind: 'tool_failure',
+      intent: 'tool_failure',
+      severity: 'warning',
+      requiresAction: true,
+      subject: 'telnotify',
+      blocks: [
+        block.fields([{ label: 'tool', value: 'Bash' }]),
+        block.code('Command not found: invalid-command'),
+      ],
     }),
+    resolverFor(claudeDescriptor),
   );
 
-  // title 中的 < > 应被转义
+  assert.match(result, /<b>🔧 Claude · 工具失败<\/b>/);
+  assert.match(result, /<b>tool:<\/b> Bash/);
+  assert.match(result, /<code>Command not found: invalid-command<\/code>/);
+});
+
+test('escapes HTML special characters in subject and blocks', () => {
+  const renderer = createTelegramHtmlRenderer();
+  const result = renderer(
+    build({
+      subject: '<script>alert(1)</script>',
+      intent: 'error',
+      severity: 'critical',
+      requiresAction: true,
+      blocks: [block.paragraph('error <b>with</b> & ampersand')],
+    }),
+    resolverFor(opencodeDescriptor),
+  );
+
   assert.match(result, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
-  // lines 中的 < > & 应被转义
   assert.match(result, /error &lt;b&gt;with&lt;\/b&gt; &amp; ampersand/);
-  // 不应出现未转义的 <script>
   assert.doesNotMatch(result, /<script>/);
 });
 
-test('createTelegramHtmlRenderer handles unknown kind with fallback', () => {
+test('falls back to raw agent id when descriptor is missing', () => {
   const renderer = createTelegramHtmlRenderer();
   const result = renderer(
-    createNotification({
-      agent: 'opencode',
-      kind: 'unknown.kind',
-      title: 'OpenCode · test',
-      lines: ['content'],
-    }),
+    build({ agent: 'ghost', subject: 'unknown' }),
+    () => undefined,
   );
 
-  assert.match(result, /<b>📌 OpenCode · 通知<\/b>/);
+  assert.match(result, /<b>✅ ghost · 会话完成<\/b>/);
 });
 
-test('createTelegramHtmlRenderer skips empty lines', () => {
+test('renders list block as bullet lines', () => {
   const renderer = createTelegramHtmlRenderer();
   const result = renderer(
-    createNotification({
-      agent: 'opencode',
-      kind: 'interaction.question',
-      title: 'OpenCode · test',
-      lines: ['', 'actual content'],
+    build({
+      intent: 'permission',
+      severity: 'warning',
+      requiresAction: true,
+      blocks: [block.list(['read /tmp/a', 'write /tmp/b'])],
     }),
+    resolverFor(opencodeDescriptor),
   );
 
-  assert.doesNotMatch(result, /\n\n\n/);
-  assert.match(result, /actual content/);
+  assert.match(result, /• read \/tmp\/a\n• write \/tmp\/b/);
 });

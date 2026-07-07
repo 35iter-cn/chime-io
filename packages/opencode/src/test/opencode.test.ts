@@ -4,20 +4,34 @@ import os from "node:os";
 import path from "node:path";
 import test from "node:test";
 
+import type { Block, CodeBlock, ParagraphBlock, StatsBlock } from "@chime-io/core";
+
+import { opencodeDescriptor } from "../agent.ts";
 import {
+  buildChangeStats,
   createOpenCodeEventFormatter,
   extractLastErrorFromMessages,
   extractLastResultFromMessages,
-  formatChangeSummary,
 } from "../format.ts";
 import { createOpenCodeNotifierPlugin } from "../notifier-plugin.ts";
 
-test("formatChangeSummary keeps additions deletions and file count", () => {
-  assert.equal(
-    formatChangeSummary({
+function findBlock<T extends Block["type"]>(
+  blocks: Block[],
+  type: T,
+): Extract<Block, { type: T }> | undefined {
+  return blocks.find((b): b is Extract<Block, { type: T }> => b.type === type);
+}
+
+test("buildChangeStats keeps additions deletions and file count", () => {
+  assert.deepEqual(
+    buildChangeStats({
       summary: { additions: 4, deletions: 2, files: 3 },
     }),
-    "+4 · -2 · 3 files",
+    [
+      { label: "additions", value: 4 },
+      { label: "deletions", value: 2 },
+      { label: "files", value: 3 },
+    ],
   );
 });
 
@@ -52,7 +66,7 @@ test("extractLastErrorFromMessages reads tool error message", () => {
   assert.equal(result, "permission denied");
 });
 
-test("createOpenCodeEventFormatter formats completed root session", async () => {
+test("createOpenCodeEventFormatter formats completed root session as neutral notification", async () => {
   const formatter = createOpenCodeEventFormatter({
     listMessages: async () => [
       {
@@ -68,13 +82,87 @@ test("createOpenCodeEventFormatter formats completed root session", async () => 
     summary: { additions: 7, deletions: 1, files: 2 },
   });
 
-  assert.deepEqual(notification, {
-    agent: "opencode",
-    kind: "session.completed",
-    title: "OpenCode · feature-flow",
-    lines: ["+7 · -1 · 2 files", "任务已完成"],
-    metadata: { sessionId: "1234567890abcdef" },
+  assert.equal(notification.agent, "opencode");
+  assert.equal(notification.kind, "session.completed");
+  assert.equal(notification.intent, "completion");
+  assert.equal(notification.severity, "info");
+  assert.equal(notification.requiresAction, false);
+  assert.equal(notification.subject, "feature-flow");
+  assert.deepEqual(notification.metadata, { sessionId: "1234567890abcdef" });
+
+  const stats = findBlock(notification.blocks, "stats") as StatsBlock;
+  assert.ok(stats);
+  assert.deepEqual(stats.stats, [
+    { label: "additions", value: 7 },
+    { label: "deletions", value: 1 },
+    { label: "files", value: 2 },
+  ]);
+
+  const paragraph = findBlock(notification.blocks, "paragraph") as ParagraphBlock;
+  assert.ok(paragraph);
+  assert.equal(paragraph.content, "任务已完成");
+});
+
+test("createOpenCodeEventFormatter includes error code block on session error", async () => {
+  const formatter = createOpenCodeEventFormatter({
+    listMessages: async () => [],
   });
+
+  const notification = await formatter.formatSessionError(
+    { id: "ses_abcdef1234", title: "task" },
+    "TypeError: boom",
+  );
+
+  assert.equal(notification.intent, "error");
+  assert.equal(notification.severity, "critical");
+  assert.equal(notification.requiresAction, true);
+  assert.equal(notification.subject, "task");
+  const code = findBlock(notification.blocks, "code") as CodeBlock;
+  assert.ok(code);
+  assert.equal(code.content, "TypeError: boom");
+});
+
+test("createOpenCodeEventFormatter formats question and permission events", () => {
+  const formatter = createOpenCodeEventFormatter({
+    listMessages: async () => [],
+  });
+
+  const question = formatter.formatQuestion(
+    { id: "ses_a", title: "app" },
+    "which one?",
+  );
+  assert.equal(question.intent, "question");
+  assert.equal(question.requiresAction, true);
+  const questionParagraph = findBlock(
+    question.blocks,
+    "paragraph",
+  ) as ParagraphBlock;
+  assert.equal(questionParagraph?.content, "which one?");
+
+  const permission = formatter.formatPermission(
+    { id: "ses_a", title: "app" },
+    "run rm -rf",
+  );
+  assert.equal(permission.intent, "permission");
+  assert.equal(permission.severity, "warning");
+  assert.equal(permission.requiresAction, true);
+  const permParagraph = findBlock(
+    permission.blocks,
+    "paragraph",
+  ) as ParagraphBlock;
+  assert.equal(permParagraph?.content, "run rm -rf");
+});
+
+test("opencodeDescriptor exposes the expected identity", () => {
+  assert.equal(opencodeDescriptor.id, "opencode");
+  assert.equal(opencodeDescriptor.displayName, "OpenCode");
+  assert.ok(opencodeDescriptor.defaultEmoji.length > 0);
+
+  const link = opencodeDescriptor.deepLinkTemplate?.({
+    sessionId: "abc",
+  });
+  assert.equal(link, "opencode://session/abc");
+  assert.equal(opencodeDescriptor.deepLinkTemplate?.({}), undefined);
 });
 
 test("createOpenCodeNotifierPlugin writes lifecycle log to file", async () => {
@@ -93,7 +181,7 @@ test("createOpenCodeNotifierPlugin writes lifecycle log to file", async () => {
         messages: async () => ({ data: [] }),
       },
     },
-    notifier: { notify: async () => undefined },
+    notifier: { notify: async () => [] },
     logger: { warn: async () => undefined },
   });
 
@@ -133,6 +221,7 @@ test("createOpenCodeNotifierPlugin skips notification for invalid sessionID", as
     notifier: {
       notify: async (notification) => {
         notifyCalls.push(notification);
+        return [];
       },
     },
     logger: {
@@ -151,23 +240,15 @@ test("createOpenCodeNotifierPlugin skips notification for invalid sessionID", as
     },
   });
 
-  assert.equal(
-    clientGetCalls.length,
-    0,
-    "should not call client.session.get for an invalid sessionID",
-  );
-  assert.equal(
-    notifyCalls.length,
-    0,
-    "should not send notification for an invalid sessionID",
-  );
+  assert.equal(clientGetCalls.length, 0);
+  assert.equal(notifyCalls.length, 0);
   assert.equal(warnings.length, 1);
   assert.match(warnings[0]!.message, /invalid sessionID/i);
-  assert.equal(warnings[0]!.extra?.sessionId, "xHLOinvalid");
+  assert.equal(warnings[0]!.extra?.["sessionId"], "xHLOinvalid");
 });
 
-test("createOpenCodeNotifierPlugin sends completed notification after session.idle", async () => {
-  const notifyCalls: unknown[] = [];
+test("createOpenCodeNotifierPlugin sends completion notification after session.idle", async () => {
+  const notifyCalls: Array<{ kind: string; intent: string }> = [];
 
   const plugin = createOpenCodeNotifierPlugin({
     client: {
@@ -180,7 +261,11 @@ test("createOpenCodeNotifierPlugin sends completed notification after session.id
     },
     notifier: {
       notify: async (notification) => {
-        notifyCalls.push(notification);
+        notifyCalls.push({
+          kind: notification.kind,
+          intent: notification.intent,
+        });
+        return [];
       },
     },
     logger: { warn: async () => undefined },
@@ -206,10 +291,11 @@ test("createOpenCodeNotifierPlugin sends completed notification after session.id
   });
 
   assert.equal(notifyCalls.length, 1);
-  assert.equal((notifyCalls[0] as { kind: string }).kind, "session.completed");
+  assert.equal(notifyCalls[0]?.kind, "session.completed");
+  assert.equal(notifyCalls[0]?.intent, "completion");
 });
 
-test("createOpenCodeNotifierPlugin skips completed notification when retry is pending", async () => {
+test("createOpenCodeNotifierPlugin skips completion notification when retry is pending", async () => {
   const notifyCalls: unknown[] = [];
 
   const plugin = createOpenCodeNotifierPlugin({
@@ -224,6 +310,7 @@ test("createOpenCodeNotifierPlugin skips completed notification when retry is pe
     notifier: {
       notify: async (notification) => {
         notifyCalls.push(notification);
+        return [];
       },
     },
     logger: { warn: async () => undefined },
@@ -258,15 +345,11 @@ test("createOpenCodeNotifierPlugin skips completed notification when retry is pe
     },
   });
 
-  assert.equal(
-    notifyCalls.length,
-    0,
-    "should not notify while retry is pending",
-  );
+  assert.equal(notifyCalls.length, 0);
 });
 
 test("createOpenCodeNotifierPlugin resumes notification after retry then new busy", async () => {
-  const notifyCalls: unknown[] = [];
+  const notifyCalls: Array<{ kind: string }> = [];
 
   const plugin = createOpenCodeNotifierPlugin({
     client: {
@@ -279,7 +362,8 @@ test("createOpenCodeNotifierPlugin resumes notification after retry then new bus
     },
     notifier: {
       notify: async (notification) => {
-        notifyCalls.push(notification);
+        notifyCalls.push({ kind: notification.kind });
+        return [];
       },
     },
     logger: { warn: async () => undefined },
@@ -325,7 +409,7 @@ test("createOpenCodeNotifierPlugin resumes notification after retry then new bus
   });
 
   assert.equal(notifyCalls.length, 1);
-  assert.equal((notifyCalls[0] as { kind: string }).kind, "session.completed");
+  assert.equal(notifyCalls[0]?.kind, "session.completed");
 });
 
 test("createOpenCodeNotifierPlugin skips question notification for invalid sessionID", async () => {
@@ -346,6 +430,7 @@ test("createOpenCodeNotifierPlugin skips question notification for invalid sessi
     notifier: {
       notify: async (notification) => {
         notifyCalls.push(notification);
+        return [];
       },
     },
     logger: {
@@ -368,5 +453,5 @@ test("createOpenCodeNotifierPlugin skips question notification for invalid sessi
   assert.equal(notifyCalls.length, 0);
   assert.equal(warnings.length, 1);
   assert.match(warnings[0]!.message, /invalid sessionID/i);
-  assert.equal(warnings[0]!.extra?.sessionId, "not-a-session");
+  assert.equal(warnings[0]!.extra?.["sessionId"], "not-a-session");
 });

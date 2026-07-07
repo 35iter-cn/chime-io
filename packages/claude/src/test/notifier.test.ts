@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import type { Block, FieldsBlock, StatsBlock, ParagraphBlock, CodeBlock } from "@chime-io/core";
+
 import {
+  claudeDescriptor,
   createSessionCompletedNotification,
   createSessionErrorNotification,
   createPermissionNotification,
@@ -11,7 +14,14 @@ import {
   createApproveResponse,
 } from "../notifier.ts";
 
-test("createSessionCompletedNotification includes required fields", () => {
+function findBlock<T extends Block["type"]>(
+  blocks: Block[],
+  type: T,
+): Extract<Block, { type: T }> | undefined {
+  return blocks.find((b): b is Extract<Block, { type: T }> => b.type === type);
+}
+
+test("createSessionCompletedNotification produces channel-neutral fields", () => {
   const notification = createSessionCompletedNotification({
     session_id: "1234567890abcdef",
     reason: "completed",
@@ -24,27 +34,48 @@ test("createSessionCompletedNotification includes required fields", () => {
     last_assistant_message: "This is the final message from the agent",
   });
 
-  // 检查 Agent 名称
   assert.equal(notification.agent, "claude");
-
-  // 检查消息类型
   assert.equal(notification.kind, "session_complete");
+  assert.equal(notification.intent, "completion");
+  assert.equal(notification.severity, "info");
+  assert.equal(notification.requiresAction, false);
+  assert.equal(notification.subject, "telnotify");
 
-  // 检查标题格式：Claude · 项目名
-  assert.equal(notification.title, "Claude · telnotify");
+  const stats = findBlock(notification.blocks, "stats") as StatsBlock;
+  assert.ok(stats, "stats block should exist");
+  assert.deepEqual(stats.stats, [
+    { label: "status", value: "completed" },
+    { label: "model", value: "claude-3-7-sonnet" },
+    { label: "tokens", value: 10800 },
+  ]);
 
-  // 检查 lines 包含关键信息（包含上下文）
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /completed/);
-  assert.match(lines, /claude-3-7-sonnet/);
-  assert.match(lines, /10800 tokens/);
-  assert.match(lines, /📁 \/root\/code\/telnotify/);
-  assert.match(lines, /🌿 feat\/demo/);
-  assert.match(lines, /This is the final message from the agent/);
+  const fields = findBlock(notification.blocks, "fields") as FieldsBlock;
+  assert.ok(fields, "fields block should exist");
+  assert.deepEqual(fields.fields, [
+    { label: "cwd", value: "/root/code/telnotify" },
+    { label: "branch", value: "feat/demo" },
+  ]);
 
-  // 检查 metadata 包含完整的 sessionId
-  assert.equal(notification.metadata.sessionId, "1234567890abcdef");
-  assert.equal(notification.metadata.fullSessionId, "1234567890abcdef");
+  const paragraph = findBlock(notification.blocks, "paragraph") as ParagraphBlock;
+  assert.ok(paragraph, "paragraph block should exist");
+  assert.equal(paragraph.content, "This is the final message from the agent");
+
+  assert.equal(notification.metadata['sessionId'], "1234567890abcdef");
+  assert.equal(notification.metadata['fullSessionId'], "1234567890abcdef");
+});
+
+test("createSessionCompletedNotification blocks contain no channel-specific copy", () => {
+  const notification = createSessionCompletedNotification({
+    session_id: "abc123",
+    cwd: "/home/user/myproject",
+    git_info: { branch: "main" },
+    last_assistant_message: "done",
+  });
+
+  const serialized = JSON.stringify(notification.blocks);
+  assert.doesNotMatch(serialized, /Claude/, "blocks must not brand the agent");
+  assert.doesNotMatch(serialized, /<\w+>/, "blocks must not include HTML");
+  assert.doesNotMatch(serialized, /📁|🌿|✅|🚨|🔒|💬|🔧|❌/, "blocks must not include emoji");
 });
 
 test("createSessionCompletedNotification handles missing optional fields", () => {
@@ -53,13 +84,12 @@ test("createSessionCompletedNotification handles missing optional fields", () =>
     cwd: "/home/user/myproject",
   });
 
-  assert.equal(notification.agent, "claude");
-  assert.equal(notification.title, "Claude · myproject");
-  assert.equal(notification.metadata.sessionId, "abc123");
+  assert.equal(notification.subject, "myproject");
+  assert.equal(notification.metadata['sessionId'], "abc123");
 
-  // 应该包含默认状态
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /completed/);
+  const stats = findBlock(notification.blocks, "stats") as StatsBlock;
+  assert.ok(stats);
+  assert.deepEqual(stats.stats, [{ label: "status", value: "completed" }]);
 });
 
 test("createSessionCompletedNotification truncates long messages", () => {
@@ -69,12 +99,13 @@ test("createSessionCompletedNotification truncates long messages", () => {
     last_assistant_message: longMessage,
   });
 
-  const lines = notification.lines.join("\n");
-  assert.ok(lines.length < 1000);
-  assert.match(lines, /\.\.\.$/);
+  const paragraph = findBlock(notification.blocks, "paragraph") as ParagraphBlock;
+  assert.ok(paragraph);
+  assert.ok(paragraph.content.length < 1000);
+  assert.match(paragraph.content, /\.\.\.$/);
 });
 
-test("createSessionErrorNotification includes error details", () => {
+test("createSessionErrorNotification produces error intent", () => {
   const notification = createSessionErrorNotification({
     session_id: "error-session-123",
     cwd: "/root/code/myproject",
@@ -82,25 +113,29 @@ test("createSessionErrorNotification includes error details", () => {
     git_info: { branch: "main" },
   });
 
-  // 检查 Agent 名称
   assert.equal(notification.agent, "claude");
-
-  // 检查消息类型
   assert.equal(notification.kind, "error");
+  assert.equal(notification.intent, "error");
+  assert.equal(notification.severity, "critical");
+  assert.equal(notification.requiresAction, true);
+  assert.equal(notification.subject, "myproject");
 
-  // 检查标题格式：Claude · 项目名
-  assert.equal(notification.title, "Claude · myproject");
+  const fields = findBlock(notification.blocks, "fields") as FieldsBlock;
+  assert.ok(fields);
+  assert.deepEqual(fields.fields, [
+    { label: "cwd", value: "/root/code/myproject" },
+    { label: "branch", value: "main" },
+  ]);
 
-  // 检查 lines 包含简洁错误信息和上下文
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /❌ 出错啦：/);
-  assert.match(lines, /Something went wrong during execution/);
-  assert.match(lines, /📁 \/root\/code\/myproject/);
-  assert.match(lines, /🌿 main/);
+  const code = findBlock(notification.blocks, "code") as CodeBlock;
+  assert.ok(code);
+  assert.equal(code.content, "Something went wrong during execution");
 
-  // 检查 metadata
-  assert.equal(notification.metadata.sessionId, "error-session-123");
-  assert.equal(notification.metadata.error, "Something went wrong during execution");
+  assert.equal(notification.metadata['sessionId'], "error-session-123");
+  assert.equal(
+    notification.metadata['error'],
+    "Something went wrong during execution",
+  );
 });
 
 test("createSessionErrorNotification handles unknown error", () => {
@@ -109,9 +144,10 @@ test("createSessionErrorNotification handles unknown error", () => {
     cwd: "/project",
   });
 
-  assert.equal(notification.metadata.error, "Unknown error");
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /❌ 出错啦：Unknown error/);
+  assert.equal(notification.metadata['error'], "Unknown error");
+  const code = findBlock(notification.blocks, "code") as CodeBlock;
+  assert.ok(code);
+  assert.equal(code.content, "Unknown error");
 });
 
 test("shouldNotifyStop returns true for normal completions", () => {
@@ -139,7 +175,7 @@ test("createSessionCompletedNotification includes project in metadata", () => {
     cwd: "/home/user/projects/awesome-app",
   });
 
-  assert.equal(notification.metadata.project, "awesome-app");
+  assert.equal(notification.metadata['project'], "awesome-app");
 });
 
 test("createSessionErrorNotification includes project in metadata", () => {
@@ -149,36 +185,32 @@ test("createSessionErrorNotification includes project in metadata", () => {
     error: "Test error",
   });
 
-  assert.equal(notification.metadata.project, "project-x");
+  assert.equal(notification.metadata['project'], "project-x");
 });
 
 test("notifications include all required fields", () => {
-  const completedNotification = createSessionCompletedNotification({
+  const notification = createSessionCompletedNotification({
     session_id: "full-session-id-12345",
     cwd: "/test/project",
     last_assistant_message: "Final response",
   });
 
-  // 验证所有必需字段都存在
-  assert.ok(completedNotification.agent, "agent should be defined");
-  assert.ok(completedNotification.kind, "kind should be defined");
-  assert.ok(completedNotification.title, "title should be defined");
-  assert.ok(Array.isArray(completedNotification.lines), "lines should be an array");
-  assert.ok(completedNotification.metadata, "metadata should be defined");
+  assert.ok(notification.agent, "agent should be defined");
+  assert.ok(notification.kind, "kind should be defined");
+  assert.ok(notification.intent, "intent should be defined");
+  assert.ok(notification.severity, "severity should be defined");
+  assert.ok(typeof notification.requiresAction === "boolean");
+  assert.ok(notification.subject, "subject should be defined");
+  assert.ok(Array.isArray(notification.blocks), "blocks should be an array");
+  assert.ok(notification.metadata, "metadata should be defined");
 
-  // 验证 metadata 包含完整的 sessionId
-  assert.ok(
-    completedNotification.metadata.fullSessionId,
-    "fullSessionId should be in metadata",
-  );
   assert.equal(
-    completedNotification.metadata.fullSessionId,
+    notification.metadata['fullSessionId'],
     "full-session-id-12345",
-    "fullSessionId should be complete",
   );
 });
 
-test("createPermissionNotification includes required fields", () => {
+test("createPermissionNotification produces permission intent", () => {
   const notification = createPermissionNotification({
     session_id: "perm-session-123",
     cwd: "/root/code/myproject",
@@ -189,26 +221,27 @@ test("createPermissionNotification includes required fields", () => {
     git_info: { branch: "develop" },
   });
 
-  // 检查 Agent 名称
   assert.equal(notification.agent, "claude");
-
-  // 检查消息类型
   assert.equal(notification.kind, "permission");
+  assert.equal(notification.intent, "permission");
+  assert.equal(notification.severity, "warning");
+  assert.equal(notification.requiresAction, true);
+  assert.equal(notification.subject, "myproject");
 
-  // 检查标题格式
-  assert.equal(notification.title, "Claude · myproject");
+  const paragraph = findBlock(notification.blocks, "paragraph") as ParagraphBlock;
+  assert.ok(paragraph);
+  assert.equal(paragraph.content, "Execute Bash Command");
 
-  // 检查 lines 包含简洁权限信息和上下文
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /🔒 Agent 需要你的确认：/);
-  assert.match(lines, /Execute Bash Command/);
-  assert.match(lines, /📁 \/root\/code\/myproject/);
-  assert.match(lines, /🌿 develop/);
+  const fields = findBlock(notification.blocks, "fields") as FieldsBlock;
+  assert.ok(fields);
+  assert.deepEqual(fields.fields, [
+    { label: "tool", value: "Bash" },
+    { label: "cwd", value: "/root/code/myproject" },
+    { label: "branch", value: "develop" },
+  ]);
 
-  // 检查 metadata
-  assert.equal(notification.metadata.sessionId, "perm-session-123");
-  assert.equal(notification.metadata.fullSessionId, "perm-session-123");
-  assert.equal(notification.metadata.permissionTitle, "Execute Bash Command");
+  assert.equal(notification.metadata['sessionId'], "perm-session-123");
+  assert.equal(notification.metadata['permissionTitle'], "Execute Bash Command");
 });
 
 test("createPermissionNotification handles minimal input", () => {
@@ -217,12 +250,13 @@ test("createPermissionNotification handles minimal input", () => {
     cwd: "/project",
   });
 
-  assert.equal(notification.metadata.permissionTitle, "");
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /🔒 Agent 需要你的确认/);
+  assert.equal(notification.intent, "permission");
+  assert.equal(notification.requiresAction, true);
+  assert.equal(notification.metadata['permissionTitle'], "");
+  assert.equal(findBlock(notification.blocks, "paragraph"), undefined);
 });
 
-test("createQuestionNotification includes required fields", () => {
+test("createQuestionNotification produces question intent", () => {
   const notification = createQuestionNotification({
     session_id: "question-session-456",
     cwd: "/root/code/awesome-app",
@@ -231,25 +265,23 @@ test("createQuestionNotification includes required fields", () => {
     git_info: { branch: "feature/test" },
   });
 
-  // 检查 Agent 名称
   assert.equal(notification.agent, "claude");
-
-  // 检查消息类型
   assert.equal(notification.kind, "question");
+  assert.equal(notification.intent, "question");
+  assert.equal(notification.severity, "info");
+  assert.equal(notification.requiresAction, true);
+  assert.equal(notification.subject, "awesome-app");
 
-  // 检查标题格式
-  assert.equal(notification.title, "Claude · awesome-app");
+  const paragraph = findBlock(notification.blocks, "paragraph") as ParagraphBlock;
+  assert.ok(paragraph);
+  assert.equal(paragraph.content, "What would you like me to do next?");
 
-  // 检查 lines 包含简洁问题信息和上下文
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /💬 Agent 正在等你回答：/);
-  assert.match(lines, /What would you like me to do next/);
-  assert.match(lines, /📁 \/root\/code\/awesome-app/);
-  assert.match(lines, /🌿 feature\/test/);
-
-  // 检查 metadata
-  assert.equal(notification.metadata.sessionId, "question-session-456");
-  assert.equal(notification.metadata.fullSessionId, "question-session-456");
+  const fields = findBlock(notification.blocks, "fields") as FieldsBlock;
+  assert.ok(fields);
+  assert.deepEqual(fields.fields, [
+    { label: "cwd", value: "/root/code/awesome-app" },
+    { label: "branch", value: "feature/test" },
+  ]);
 });
 
 test("createQuestionNotification handles message field", () => {
@@ -258,9 +290,9 @@ test("createQuestionNotification handles message field", () => {
     message: "Please provide more details",
   });
 
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /💬 Agent 正在等你回答：/);
-  assert.match(lines, /Please provide more details/);
+  const paragraph = findBlock(notification.blocks, "paragraph") as ParagraphBlock;
+  assert.ok(paragraph);
+  assert.equal(paragraph.content, "Please provide more details");
 });
 
 test("createQuestionNotification truncates long questions", () => {
@@ -270,12 +302,13 @@ test("createQuestionNotification truncates long questions", () => {
     prompt: longQuestion,
   });
 
-  const lines = notification.lines.join("\n");
-  assert.ok(lines.length < 1000);
-  assert.match(lines, /\.\.\.$/);
+  const paragraph = findBlock(notification.blocks, "paragraph") as ParagraphBlock;
+  assert.ok(paragraph);
+  assert.ok(paragraph.content.length < 1000);
+  assert.match(paragraph.content, /\.\.\.$/);
 });
 
-test("createToolFailureNotification includes required fields", () => {
+test("createToolFailureNotification produces tool_failure intent", () => {
   const notification = createToolFailureNotification({
     session_id: "tool-fail-session-789",
     cwd: "/root/code/myproject",
@@ -285,27 +318,30 @@ test("createToolFailureNotification includes required fields", () => {
     git_info: { branch: "feature/test" },
   });
 
-  // 检查 Agent 名称
   assert.equal(notification.agent, "claude");
-
-  // 检查消息类型
   assert.equal(notification.kind, "tool_failure");
+  assert.equal(notification.intent, "tool_failure");
+  assert.equal(notification.severity, "warning");
+  assert.equal(notification.requiresAction, true);
+  assert.equal(notification.subject, "myproject");
 
-  // 检查标题格式
-  assert.equal(notification.title, "Claude · myproject");
+  const fields = findBlock(notification.blocks, "fields") as FieldsBlock;
+  assert.ok(fields);
+  assert.deepEqual(fields.fields, [
+    { label: "tool", value: "Bash" },
+    { label: "cwd", value: "/root/code/myproject" },
+    { label: "branch", value: "feature/test" },
+  ]);
 
-  // 检查 lines 包含简洁工具失败信息和上下文
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /🔧 工具 Bash 失败：/);
-  assert.match(lines, /Command not found: invalid-command/);
-  assert.match(lines, /📁 \/root\/code\/myproject/);
-  assert.match(lines, /🌿 feature\/test/);
+  const code = findBlock(notification.blocks, "code") as CodeBlock;
+  assert.ok(code);
+  assert.equal(code.content, "Command not found: invalid-command");
 
-  // 检查 metadata
-  assert.equal(notification.metadata.sessionId, "tool-fail-session-789");
-  assert.equal(notification.metadata.fullSessionId, "tool-fail-session-789");
-  assert.equal(notification.metadata.toolName, "Bash");
-  assert.equal(notification.metadata.error, "Command not found: invalid-command");
+  assert.equal(notification.metadata['toolName'], "Bash");
+  assert.equal(
+    notification.metadata['error'],
+    "Command not found: invalid-command",
+  );
 });
 
 test("createToolFailureNotification handles minimal input", () => {
@@ -314,11 +350,10 @@ test("createToolFailureNotification handles minimal input", () => {
     cwd: "/project",
   });
 
-  assert.equal(notification.metadata.toolName, "");
-  assert.equal(notification.metadata.error, "");
+  assert.equal(notification.metadata['toolName'], "");
+  assert.equal(notification.metadata['error'], "");
   assert.equal(notification.kind, "tool_failure");
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /❌ 工具执行失败/);
+  assert.equal(findBlock(notification.blocks, "code"), undefined);
 });
 
 test("createToolFailureNotification handles tool_use field", () => {
@@ -333,9 +368,27 @@ test("createToolFailureNotification handles tool_use field", () => {
     git_info: { branch: "main" },
   });
 
-  assert.equal(notification.metadata.toolName, "Edit");
-  const lines = notification.lines.join("\n");
-  assert.match(lines, /🔧 工具 Edit 失败：/);
-  assert.match(lines, /File does not exist/);
-  assert.match(lines, /🌿 main/);
+  assert.equal(notification.metadata['toolName'], "Edit");
+  const fields = findBlock(notification.blocks, "fields") as FieldsBlock;
+  assert.ok(fields);
+  assert.equal(fields.fields[0]?.value, "Edit");
+  const code = findBlock(notification.blocks, "code") as CodeBlock;
+  assert.equal(code?.content, "File does not exist");
+});
+
+test("claudeDescriptor exposes the expected identity", () => {
+  assert.equal(claudeDescriptor.id, "claude");
+  assert.equal(claudeDescriptor.displayName, "Claude");
+  assert.equal(typeof claudeDescriptor.defaultEmoji, "string");
+  assert.ok(claudeDescriptor.defaultEmoji.length > 0);
+});
+
+test("claudeDescriptor.deepLinkTemplate builds a session URL when available", () => {
+  const link = claudeDescriptor.deepLinkTemplate?.({
+    fullSessionId: "abc123",
+  });
+  assert.equal(link, "claude://session/abc123");
+
+  const missing = claudeDescriptor.deepLinkTemplate?.({});
+  assert.equal(missing, undefined);
 });

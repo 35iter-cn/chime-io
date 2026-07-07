@@ -1,6 +1,11 @@
 #!/usr/bin/env node
 
-import { createNotification } from '@chime-io/core';
+import {
+  createAgentRegistry,
+  createNotification,
+  type AgentDescriptor,
+  type Notification,
+} from '@chime-io/core';
 import { createTelegramChannel } from '@chime-io/channel-telegram';
 
 export interface CliOptions {
@@ -12,9 +17,15 @@ export interface CliOptions {
   help: boolean;
 }
 
+const cliDescriptor: AgentDescriptor = {
+  id: 'cli',
+  displayName: 'CLI',
+  defaultEmoji: '💬',
+};
+
 function getHelpText(): string {
   return `
-Usage: telme [options]
+Usage: chime [options]
 
 Options:
   -t, --token <token>      Telegram bot token
@@ -29,8 +40,8 @@ Environment Variables:
   TELEGRAM_USER_ID         User ID (can be used instead of -u)
 
 Examples:
-  pnpm --filter telme exec telme -t <token> -u <user_id> -m "Hello"
-  TELEGRAM_BOT_TOKEN=<token> TELEGRAM_USER_ID=<id> pnpm --filter telme exec telme -m "Hello"
+  pnpm --filter @chime-io/cli exec chime -t <token> -u <user_id> -m "Hello"
+  TELEGRAM_BOT_TOKEN=<token> TELEGRAM_USER_ID=<id> pnpm --filter @chime-io/cli exec chime -m "Hello"
 `.trim();
 }
 
@@ -85,6 +96,21 @@ export function parseArgs(args: string[], env: NodeJS.ProcessEnv): CliOptions {
   return options;
 }
 
+/**
+ * Build the notification carried by the CLI's manual message.
+ * A single-subject completion notification keeps the pipeline uniform.
+ */
+export function buildCliNotification(message: string): Notification {
+  return createNotification({
+    agent: 'cli',
+    kind: 'manual.message',
+    intent: 'completion',
+    severity: 'info',
+    requiresAction: false,
+    subject: message,
+  });
+}
+
 export async function main(
   args = process.argv.slice(2),
   env: NodeJS.ProcessEnv = process.env,
@@ -117,25 +143,21 @@ export async function main(
   }
 
   try {
+    const registry = createAgentRegistry([cliDescriptor]);
+
     const channel = createTelegramChannel({
       token: options.token,
       userId: options.userId,
       parseMode: options.parseMode,
       silent: options.silent,
+      resolveAgent: (id) => registry.lookup(id),
     });
 
-    const result = await channel.send(
-      createNotification({
-        agent: 'cli',
-        kind: 'manual.message',
-        title: options.message,
-        lines: [],
-      }),
-    );
+    const result = await channel.send(buildCliNotification(options.message));
 
     const messageId =
       typeof result === 'object' && result && 'message_id' in result
-        ? String(result.message_id)
+        ? String((result as { message_id: unknown }).message_id)
         : 'unknown';
 
     console.log(`Message sent successfully! Message ID: ${messageId}`);
@@ -146,8 +168,8 @@ export async function main(
   }
 }
 
-// Detect if this file is being run directly as an entry point
-const isEntryPoint = process.argv[1]?.includes('cli') || process.argv[1]?.includes('telme');
+const isEntryPoint =
+  process.argv[1]?.includes('cli') || process.argv[1]?.includes('chime');
 
 if (isEntryPoint) {
   void main();
