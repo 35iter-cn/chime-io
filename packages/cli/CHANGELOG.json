@@ -2,6 +2,26 @@
   "name": "@chime-io/cli",
   "entries": [
     {
+      "version": "2.0.0",
+      "tag": "@chime-io/cli_v2.0.0",
+      "date": "Tue, 07 Jul 2026 02:32:46 GMT",
+      "comments": {
+        "major": [
+          {
+            "comment": "Channel-neutral notification architecture with typed blocks, shared semantics, and AgentDescriptor"
+          }
+        ],
+        "dependency": [
+          {
+            "comment": "Updating dependency \"@chime-io/core\" to `2.0.0`"
+          },
+          {
+            "comment": "Updating dependency \"@chime-io/channel-telegram\" to `2.0.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "1.1.2",
       "tag": "@chime-io/cli_v1.1.2",
       "date": "Sun, 05 Jul 2026 13:51:25 GMT",

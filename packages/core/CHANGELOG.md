@@ -1,6 +1,13 @@
 # Change Log - @chime-io/core
 
-This log was last generated on Fri, 10 Apr 2026 22:11:22 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jul 2026 02:32:46 GMT and should not be manually modified.
+
+## 2.0.0
+Tue, 07 Jul 2026 02:32:46 GMT
+
+### Breaking changes
+
+- Channel-neutral notification architecture with typed blocks, shared semantics, and AgentDescriptor
 
 ## 1.1.0
 Fri, 10 Apr 2026 22:11:22 GMT

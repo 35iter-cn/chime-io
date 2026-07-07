@@ -1,6 +1,13 @@
 # Change Log - @chime-io/plugin-opencode
 
-This log was last generated on Sun, 05 Jul 2026 14:29:29 GMT and should not be manually modified.
+This log was last generated on Tue, 07 Jul 2026 02:32:46 GMT and should not be manually modified.
+
+## 2.0.0
+Tue, 07 Jul 2026 02:32:46 GMT
+
+### Breaking changes
+
+- Channel-neutral notification architecture with typed blocks, shared semantics, and AgentDescriptor
 
 ## 1.2.1
 Sun, 05 Jul 2026 14:29:29 GMT
