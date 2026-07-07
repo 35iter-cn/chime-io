@@ -63,7 +63,8 @@
     "build:watch": "tsup --watch",
     "test": "tsx --test src/test/**/*.test.ts",
     "clean": "rm -rf dist",
-    "typecheck": "tsc --noEmit --pretty false"
+    "typecheck": "tsc --noEmit --pretty false",
+    "prepublishOnly": "node scripts/sync-plugin-json-version.cjs"
   },
   "devDependencies": {
     "@types/node": "~25.5.2",
