@@ -1,13 +1,6 @@
 # Change Log - @chime-io/plugin-claude
 
-This log was last generated on Tue, 07 Jul 2026 04:14:32 GMT and should not be manually modified.
-
-## 2.0.2
-Tue, 07 Jul 2026 04:14:32 GMT
-
-### Patches
-
-- Bundle @chime-io dependencies into dist and sync plugin.json version
+This log was last generated on Tue, 07 Jul 2026 03:56:09 GMT and should not be manually modified.
 
 ## 2.0.1
 Tue, 07 Jul 2026 03:56:09 GMT

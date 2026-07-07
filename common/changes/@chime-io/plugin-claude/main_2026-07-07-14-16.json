@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Bundle @chime-io dependencies into dist and sync plugin.json version",
+      "type": "patch",
+      "packageName": "@chime-io/plugin-claude"
+    }
+  ],
+  "packageName": "@chime-io/plugin-claude",
+  "email": "rxh12352@gmail.com"
+}
