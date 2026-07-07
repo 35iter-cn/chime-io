@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Update README installation to use remote marketplace and trim local marketplace manifest",
+      "type": "patch",
+      "packageName": "@chime-io/plugin-claude"
+    }
+  ],
+  "packageName": "@chime-io/plugin-claude",
+  "email": "rxh12352@gmail.com"
+}
